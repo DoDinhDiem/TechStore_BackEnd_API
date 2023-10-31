@@ -117,7 +117,7 @@ namespace TechStore.Controllers
 
         [Route("Delete_Loai/{id}")]
         [HttpDelete]
-        public async Task<ActionResult<Loai>> DeleteLoai([FromBody]int id)
+        public async Task<ActionResult<Loai>> DeleteLoai(int id)
         {
             try
             {
@@ -143,21 +143,52 @@ namespace TechStore.Controllers
             }
         }
 
+        [Route("DeleteMany_Loai")]
+        [HttpDelete]
+        public IActionResult DeleteMany([FromBody]List<int> listId)
+        {
+            try
+            {
+                var query = _context.Loais.Where(i => listId.Contains(i.Id)).ToList();
+
+                if (query.Count == 0)
+                {
+                    return NotFound("Không tìm thấy bất kỳ mục nào để xóa.");
+                }
+
+                _context.Loais.RemoveRange(query);
+                _context.SaveChanges();
+
+                return Ok(new
+                {
+                    message = "Danh sách đã được xóa thành công."
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [Route("Search_Loai")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Loai>>> Search(
-            [FromQuery] string Keywork,
-            [FromQuery] int pageIndex = 1,
+            [FromQuery] string? Keywork,
+            [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
             IQueryable<Loai> query = _context.Loais;
 
-            if(!string.IsNullOrEmpty(Keywork))
+            if (!string.IsNullOrEmpty(Keywork))
             {
-                query = query.Where(x => x.TenLoai.Contains(Keywork));
+                query = query.Where(dc => dc.TenLoai.Contains(Keywork));
             }
 
-            var result = query.OrderByDescending(r => r.TenLoai).Skip(pageSize * (pageIndex - 1)).Take(pageSize).AsQueryable();
+            // Truy vấn dữ liệu với phân trang
+            var result = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
             return Ok(result);
         }
     }
