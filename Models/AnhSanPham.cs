@@ -8,6 +8,7 @@ namespace TechStore.Models
         public int Id { get; set; }
         public int? SanPhamId { get; set; }
         public string? DuongDanAnh { get; set; }
+        public bool? TrangThai { get; set; }
         public DateTime? CreateDate { get; set; }
         public DateTime? UpdateDate { get; set; }
 
