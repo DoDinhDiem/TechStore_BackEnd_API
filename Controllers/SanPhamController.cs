@@ -10,9 +10,11 @@ namespace TechStore.Controllers
     public class SanPhamController : ControllerBase
     {
         private TechStoreContext _context = new TechStoreContext();
-        public SanPhamController(TechStoreContext context)
+        private string _path;
+        public SanPhamController(TechStoreContext context, IConfiguration configuration)
         {
             _context = context;
+            _path = configuration["AppSettings:UrlImage"];
         }
 
         [Route("GetAll_SanPham")]
@@ -168,6 +170,100 @@ namespace TechStore.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("Search_SanPham")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<SanPham>>> Search(
+            [FromQuery] string? Keywork,
+            [FromQuery] decimal? MinGiaBan,
+            [FromQuery] decimal? MaxGiaBan,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var query = _context.SanPhams
+                .Select(x => new
+                {
+                    id = x.Id,
+                    tenSanPham = x.TenSanPham,
+                    giaBan = x.GiaBan,
+                    khuyenMai = x.KhuyenMai,
+                    soLuonTon = x.SoLuongTon,
+                    baoHanh = x.BaoHanh,
+                    moTa = x.MoTa,
+                    loaiId = _context.Loais.Where(l => l.Id == x.LoaiId).Select(l => l.TenLoai).FirstOrDefault(),
+                    hangSanXuatId = _context.HangSanXuats.Where(h => h.Id == x.HangSanXuatId).Select(h => h.TenHang).FirstOrDefault(),
+                    trangThaiSanPham = x.TrangThaiSanPham,
+                    trangThaiHoatDong = x.TrangThaiHoatDong,
+                    createDate = x.CreateDate,
+                    updateDate = x.UpdateDate
+                });
+
+            if (!string.IsNullOrEmpty(Keywork))
+            {
+                query = query.Where(dc => dc.tenSanPham.Contains(Keywork));
+            }
+
+            if (MinGiaBan.HasValue)
+            {
+                query = query.Where(dc => dc.giaBan >= MinGiaBan.Value);
+            }
+
+            if (MaxGiaBan.HasValue)
+            {
+                query = query.Where(dc => dc.giaBan <= MaxGiaBan.Value);
+            }
+
+            var result = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            return Ok(result);
+        }
+
+        [Route("upload")]
+        [HttpPost, DisableRequestSizeLimit]
+        public async Task<IActionResult> Upload(IFormFile file)
+        {
+            try
+            {
+                if (file.Length > 0)
+                {
+                    string filePath = $"products/{file.FileName}";
+                    var fullPath = CreatePathFile(filePath);
+                    using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(fileStream);
+                    }
+                    return Ok(new { filePath });
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Not found!");
+            }
+        }
+
+        [NonAction]
+        private string CreatePathFile(string RelativePathFileName)
+        {
+            try
+            {
+                string serverRootPathFolder = _path;
+                string fullPathFile = $@"{serverRootPathFolder}\{RelativePathFileName}";
+                string fullPathFolder = System.IO.Path.GetDirectoryName(fullPathFile);
+                if (!Directory.Exists(fullPathFolder))
+                    Directory.CreateDirectory(fullPathFolder);
+                return fullPathFile;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
             }
         }
     }
