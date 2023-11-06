@@ -41,7 +41,7 @@ namespace TechStore.Controllers
         }
 
         [Route("GetById_Loai/{id}")]
-        [HttpPost]
+        [HttpGet]
         public async Task<ActionResult<Loai>> GetById(int id)
         {
             try
@@ -58,17 +58,18 @@ namespace TechStore.Controllers
                                        createDate = loai.CreateDate,
                                        updateDate = loai.UpdateDate
                                    }).FirstOrDefaultAsync();
-                if(query == null)
+                if (query == null)
                 {
                     return NotFound();
                 }
                 return Ok(query);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+     
 
         [Route("Create_Loai")]
         [HttpPost]
@@ -84,7 +85,7 @@ namespace TechStore.Controllers
 
         [Route("Update_Loai")]
         [HttpPut]
-        public async Task<ActionResult<Loai>> UpdateLoai([FromBody]Loai loais)
+        public async Task<ActionResult<Loai>> UpdateLoai([FromBody] Loai loais)
         {
             try
             {
@@ -107,6 +108,36 @@ namespace TechStore.Controllers
                 return Ok(new
                 {
                     message = "Sửa loại sản phẩm thành công!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("Update_Loai_TrangThai/{id}")]
+        [HttpPut]
+        public async Task<ActionResult<Loai>> UpdateLoai(int id)
+        {
+            try
+            {
+                var query = await (from loai in _context.Loais
+                                   where loai.Id == id
+                                   select loai).FirstOrDefaultAsync();
+                if (query == null)
+                {
+                    return NotFound();
+                }
+
+                query.TrangThai = !query.TrangThai; // Đảo trạng thái
+                query.UpdateDate = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Sửa trạng thái và UpdateDate của loại sản phẩm thành công!"
                 });
             }
             catch (Exception ex)
@@ -173,9 +204,7 @@ namespace TechStore.Controllers
         [Route("Search_Loai")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Loai>>> Search(
-            [FromQuery] string? Keywork,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10)
+            [FromQuery] string? Keywork)
         {
             IQueryable<Loai> query = _context.Loais;
 
@@ -183,13 +212,8 @@ namespace TechStore.Controllers
             {
                 query = query.Where(dc => dc.TenLoai.Contains(Keywork));
             }
-
-            // Truy vấn dữ liệu với phân trang
-            var result = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-            return Ok(result);
+        
+            return Ok(query);
         }
     }
 }

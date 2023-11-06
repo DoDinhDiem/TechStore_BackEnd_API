@@ -102,7 +102,7 @@ namespace TechStore.Controllers
 
         [Route("Delete_Hang/{id}")]
         [HttpDelete]
-        public async Task<ActionResult<HangSanXuat>> Delete([FromBody]int id)
+        public async Task<ActionResult<HangSanXuat>> Delete(int id)
         {
             try
             {
@@ -158,9 +158,7 @@ namespace TechStore.Controllers
         [Route("Search_Hang")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<HangSanXuat>>> Search(
-            [FromQuery]string? Keywork,
-            [FromQuery]int pageIndex = 1,
-            [FromQuery]int pageSize = 10)
+            [FromQuery]string? Keywork)
         {
             IQueryable<HangSanXuat> query = _context.HangSanXuats;
 
@@ -168,9 +166,7 @@ namespace TechStore.Controllers
             {
                 query = query.Where(x => x.TenHang.Contains(Keywork));
             }
-
-            var result = query.Skip(pageSize * (pageIndex - 1)).Take(pageSize).AsQueryable();
-            return Ok(result);
+            return Ok(query);
         }
     }
 }

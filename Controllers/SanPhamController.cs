@@ -178,9 +178,7 @@ namespace TechStore.Controllers
         public async Task<ActionResult<IEnumerable<SanPham>>> Search(
             [FromQuery] string? Keywork,
             [FromQuery] decimal? MinGiaBan,
-            [FromQuery] decimal? MaxGiaBan,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10)
+            [FromQuery] decimal? MaxGiaBan)
         {
             var query = _context.SanPhams
                 .Select(x => new
@@ -213,13 +211,8 @@ namespace TechStore.Controllers
             if (MaxGiaBan.HasValue)
             {
                 query = query.Where(dc => dc.giaBan <= MaxGiaBan.Value);
-            }
-
-            var result = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-            return Ok(result);
+            };
+            return Ok(query);
         }
 
         [Route("upload")]
