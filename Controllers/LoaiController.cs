@@ -8,9 +8,9 @@ namespace TechStore.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class LoaiController : ControllerBase
-    { 
+    {
         private TechStoreContext _context = new TechStoreContext();
-        public LoaiController(TechStoreContext context) 
+        public LoaiController(TechStoreContext context)
         {
             _context = context;
         }
@@ -26,12 +26,8 @@ namespace TechStore.Controllers
                                    {
                                        id = loai.Id,
                                        tenLoai = loai.TenLoai,
-                                       trangThai = loai.TrangThai,
-                                       maCha = loai.MaCha,
-                                       sapXep = loai.SapXep,
-                                       createDate = loai.CreateDate,
-                                       updateDate = loai.UpdateDate
-                                   }).ToListAsync();
+                                       trangThai = loai.TrangThai
+                                   }).Where(x => x.trangThai == true).ToListAsync();
                 return Ok(query);
             }
             catch (Exception ex)
@@ -53,7 +49,6 @@ namespace TechStore.Controllers
                                        id = loai.Id,
                                        tenLoai = loai.TenLoai,
                                        trangThai = loai.TrangThai,
-                                       maCha = loai.MaCha,
                                        sapXep = loai.SapXep,
                                        createDate = loai.CreateDate,
                                        updateDate = loai.UpdateDate
@@ -69,11 +64,11 @@ namespace TechStore.Controllers
                 return BadRequest(ex.Message);
             }
         }
-     
+
 
         [Route("Create_Loai")]
         [HttpPost]
-        public async Task<ActionResult<Loai>> CreateLoai([FromBody]Loai loai)
+        public async Task<ActionResult<Loai>> CreateLoai([FromBody] Loai loai)
         {
             _context.Loais.Add(loai);
             await _context.SaveChangesAsync();
@@ -99,7 +94,6 @@ namespace TechStore.Controllers
 
                 query.TenLoai = loais.TenLoai;
                 query.TrangThai = loais.TrangThai;
-                query.MaCha = loais.MaCha;
                 query.SapXep = loais.SapXep;
                 query.UpdateDate = DateTime.Now;
 
@@ -155,8 +149,8 @@ namespace TechStore.Controllers
                 var query = await (from loai in _context.Loais
                                    where loai.Id == id
                                    select loai).FirstOrDefaultAsync();
-               
-                if(query == null)
+
+                if (query == null)
                 {
                     return NotFound();
                 }
@@ -176,7 +170,7 @@ namespace TechStore.Controllers
 
         [Route("DeleteMany_Loai")]
         [HttpDelete]
-        public IActionResult DeleteMany([FromBody]List<int> listId)
+        public IActionResult DeleteMany([FromBody] List<int> listId)
         {
             try
             {
@@ -212,7 +206,7 @@ namespace TechStore.Controllers
             {
                 query = query.Where(dc => dc.TenLoai.Contains(Keywork));
             }
-        
+
             return Ok(query);
         }
     }

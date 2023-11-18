@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using TechStore.Models;
 
 namespace TechStore.Controllers
@@ -11,10 +12,12 @@ namespace TechStore.Controllers
     {
         private TechStoreContext _context = new TechStoreContext();
         private string _path;
+        private string _pathClient;
         public SanPhamController(TechStoreContext context, IConfiguration configuration)
         {
             _context = context;
             _path = configuration["AppSettings:UrlImage"];
+            _pathClient = configuration["AppSettings:UrlImageClient"];
         }
 
         [Route("GetAll_SanPham")]
@@ -28,6 +31,28 @@ namespace TechStore.Controllers
                                    {
                                        id = x.Id,
                                        tenSanPham = x.TenSanPham,
+                                       trangThaiSanPham = x.TrangThaiSanPham,
+                                       trangThaiHoatDong = x.TrangThaiHoatDong
+                                   }).Where(x => x.trangThaiHoatDong == true).ToListAsync();
+                return Ok(query);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [Route("GetById_SanPham/{id}")]
+        [HttpGet]
+        public async Task<ActionResult<SanPham>> GetById(int id)
+        {
+            try
+            {
+                var query = await (from x in _context.SanPhams
+
+                                   select new
+                                   {
+                                       id = x.Id,
+                                       tenSanPham = x.TenSanPham,
                                        giaBan = x.GiaBan,
                                        khuyenMai = x.KhuyenMai,
                                        soLuonTon = x.SoLuongTon,
@@ -35,11 +60,14 @@ namespace TechStore.Controllers
                                        moTa = x.MoTa,
                                        loaiId = _context.Loais.Where(l => l.Id == x.LoaiId).Select(x => x.TenLoai).FirstOrDefault(),
                                        hangSanXuatId = _context.HangSanXuats.Where(h => h.Id == x.HangSanXuatId).Select(x => x.TenHang).FirstOrDefault(),
+                                       AnhSanPhamOnly = _context.AnhSanPhams.Where(a => a.SanPhamId == x.Id && a.TrangThai == true).Select(a => new AnhSanPham { DuongDanAnh = a.DuongDanAnh }).ToList(),
+                                       anhSanPhamList = _context.AnhSanPhams.Where(a => a.SanPhamId == x.Id && a.TrangThai == false).Select(a => new AnhSanPham { DuongDanAnh = a.DuongDanAnh }).ToList(),
+                                       thongSos = _context.ThongSos.Where(a => a.SanPhamId == x.Id).Select(a => new ThongSo { TenThongSo = a.TenThongSo, MoTa = a.MoTa }).ToList(),
                                        trangThaiSanPham = x.TrangThaiSanPham,
                                        trangThaiHoatDong = x.TrangThaiHoatDong,
                                        createDate = x.CreateDate,
                                        updateDate = x.UpdateDate
-                                   }).ToListAsync();
+                                   }).Where(x => x.id == id).FirstOrDefaultAsync();
                 return Ok(query);
             }
             catch (Exception ex)
@@ -56,23 +84,37 @@ namespace TechStore.Controllers
             {
 
                 _context.SanPhams.Add(model);
-                await _context.SaveChangesAsync();
 
-                foreach (var img in model.AnhSanPhams)
+                var newImages = new List<AnhSanPham>();
+
+                foreach (var productImg in model.AnhSanPhams)
                 {
-                    var image = new AnhSanPham
+                    var img = new AnhSanPham
                     {
                         SanPhamId = model.Id,
-                        DuongDanAnh = img.DuongDanAnh
+                        DuongDanAnh = productImg.DuongDanAnh,
                     };
-
-                    _context.AnhSanPhams.Add(image);
+                    newImages.Add(img);
                 }
 
+                var newThongSoList = new List<ThongSo>();
+                foreach (var thongSo in model.ThongSos)
+                {
+                    var newThongSo = new ThongSo
+                    {
+                        SanPhamId = model.Id,
+                        TenThongSo = thongSo.TenThongSo,
+                        MoTa = thongSo.MoTa,
+                        TrangThai = thongSo.TrangThai,
+                    };
+                    newThongSoList.Add(newThongSo);
+                }
                 await _context.SaveChangesAsync();
+
 
                 return Ok(new
                 {
+                    id = model.Id,
                     message = "Thêm sản phẩm thành công"
                 });
             }
@@ -96,7 +138,6 @@ namespace TechStore.Controllers
                 {
                     return NotFound();
                 }
-
                 query.TenSanPham = model.TenSanPham;
                 query.GiaBan = model.GiaBan;
                 query.KhuyenMai = model.KhuyenMai;
@@ -109,29 +150,69 @@ namespace TechStore.Controllers
                 query.TrangThaiHoatDong = model.TrangThaiHoatDong;
                 query.UpdateDate = DateTime.Now;
 
-
-                var imgOld = _context.AnhSanPhams.Where(imgOld => imgOld.SanPhamId == query.Id).ToList();
-                foreach (var img in imgOld)
+                var oldImages = _context.AnhSanPhams.Where(img => img.SanPhamId == model.Id);
+                _context.AnhSanPhams.RemoveRange(oldImages);
+                foreach (var productImg in model.AnhSanPhams)
                 {
-                    _context.AnhSanPhams.Remove(img);
-                }
-
-                foreach (var imgNew in model.AnhSanPhams)
-                {
-                    var image = new AnhSanPham
+                    var img = new AnhSanPham
                     {
                         SanPhamId = model.Id,
-                        DuongDanAnh = imgNew.DuongDanAnh,
-                        UpdateDate = DateTime.Now
+                        DuongDanAnh = productImg.DuongDanAnh,
                     };
-
-                    _context.AnhSanPhams.Add(image);
+                    _context.AnhSanPhams.Add(img);
                 }
+                _context.ThongSos.RemoveRange(_context.ThongSos.Where(t => t.SanPhamId == model.Id));
+
+                var newThongSoList = new List<ThongSo>();
+                foreach (var thongSo in model.ThongSos)
+                {
+                    var newThongSo = new ThongSo
+                    {
+                        SanPhamId = model.Id,
+                        TenThongSo = thongSo.TenThongSo,
+                        MoTa = thongSo.MoTa,
+                        TrangThai = true,
+                        UpdateDate = DateTime.Now,
+
+                    };
+                    newThongSoList.Add(newThongSo);
+                }
+
                 await _context.SaveChangesAsync();
 
                 return Ok(new
                 {
                     message = "Cập nhật sản phẩm thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("Update_SanPham_TrangThaiHoatDong/{id}")]
+        [HttpPut]
+        public async Task<ActionResult<SanPham>> UpdateSanPham(int id)
+        {
+            try
+            {
+                var query = await (from sp in _context.SanPhams
+                                   where sp.Id == id
+                                   select sp).FirstOrDefaultAsync();
+                if (query == null)
+                {
+                    return NotFound();
+                }
+
+                query.TrangThaiHoatDong = !query.TrangThaiHoatDong;
+                query.UpdateDate = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Sửa trạng thái và UpdateDate của sản phẩm thành công!"
                 });
             }
             catch (Exception ex)
@@ -173,6 +254,35 @@ namespace TechStore.Controllers
             }
         }
 
+        [Route("DeleteMany_SanPham")]
+        [HttpDelete]
+        public IActionResult DeleteMany([FromBody] List<int> listId)
+        {
+            try
+            {
+                var query = _context.SanPhams.Where(i => listId.Contains(i.Id)).ToList();
+                var productImages = _context.AnhSanPhams.Where(img => listId.Contains(img.SanPhamId)).ToList();
+
+                if (query.Count == 0)
+                {
+                    return NotFound("Không tìm thấy bất kỳ mục nào để xóa.");
+                }
+                _context.AnhSanPhams.RemoveRange(productImages);
+                _context.SaveChanges();
+                _context.SanPhams.RemoveRange(query);
+                _context.SaveChanges();
+
+                return Ok(new
+                {
+                    message = "Danh sách đã được xóa thành công."
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [Route("Search_SanPham")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SanPham>>> Search(
@@ -190,8 +300,8 @@ namespace TechStore.Controllers
                     soLuonTon = x.SoLuongTon,
                     baoHanh = x.BaoHanh,
                     moTa = x.MoTa,
-                    loaiId = _context.Loais.Where(l => l.Id == x.LoaiId).Select(l => l.TenLoai).FirstOrDefault(),
-                    hangSanXuatId = _context.HangSanXuats.Where(h => h.Id == x.HangSanXuatId).Select(h => h.TenHang).FirstOrDefault(),
+                    loaiId = _context.Loais.Where(l => l.Id == x.LoaiId).Select(x => x.TenLoai).FirstOrDefault(),
+                    hangSanXuatId = _context.HangSanXuats.Where(h => h.Id == x.HangSanXuatId).Select(x => x.TenHang).FirstOrDefault(),
                     trangThaiSanPham = x.TrangThaiSanPham,
                     trangThaiHoatDong = x.TrangThaiHoatDong,
                     createDate = x.CreateDate,
@@ -217,28 +327,46 @@ namespace TechStore.Controllers
 
         [Route("upload")]
         [HttpPost, DisableRequestSizeLimit]
-        public async Task<IActionResult> Upload(IFormFile file)
+        public async Task<IActionResult> Upload(List<IFormFile> files)
         {
             try
             {
-                if (file.Length > 0)
+                if (files != null && files.Count > 0)
                 {
-                    string filePath = $"products/{file.FileName}";
-                    var fullPath = CreatePathFile(filePath);
-                    using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                    List<string> filePaths = new List<string>();
+
+                    foreach (var file in files)
                     {
-                        await file.CopyToAsync(fileStream);
+                        if (file.Length > 0)
+                        {
+                            string filePath = $"products/{file.FileName}";
+                            var fullPath = CreatePathFile(filePath);
+                            using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                            {
+                                await file.CopyToAsync(fileStream);
+                            }
+                            filePaths.Add(filePath);
+
+                            string filePathClient = $"productsClient/{file.FileName}";
+                    var fullPathClient = CreatePathFileClient(filePathClient);
+                    using (var fileStreamClient = new FileStream(fullPathClient, FileMode.Create))
+                    {
+                        await file.CopyToAsync(fileStreamClient);
                     }
-                    return Ok(new { filePath });
+                    filePaths.Add(filePathClient);
+                        }
+                    }
+
+                    return Ok(new { filePaths });
                 }
                 else
                 {
-                    return BadRequest();
+                    return BadRequest("No files were uploaded.");
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Not found!");
+                return StatusCode(500, "Internal Server Error");
             }
         }
 
@@ -253,6 +381,24 @@ namespace TechStore.Controllers
                 if (!Directory.Exists(fullPathFolder))
                     Directory.CreateDirectory(fullPathFolder);
                 return fullPathFile;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
+
+        [NonAction]
+        private string CreatePathFileClient(string RelativePathFileName)
+        {
+            try
+            {
+                string serverRootPathFolderClient = _pathClient;
+                string fullPathFileClient = $@"{serverRootPathFolderClient}\{RelativePathFileName}";
+                string fullPathFolderClient = Path.GetDirectoryName(fullPathFileClient);
+                if (!Directory.Exists(fullPathFolderClient))
+                    Directory.CreateDirectory(fullPathFolderClient);
+                return fullPathFileClient;
             }
             catch (Exception ex)
             {

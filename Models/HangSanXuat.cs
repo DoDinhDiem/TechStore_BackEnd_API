@@ -12,6 +12,10 @@ namespace TechStore.Models
 
         public int Id { get; set; }
         public string? TenHang { get; set; }
+        public bool? TrangThai { get; set; }
+        public DateTime? CreateDate { get; set; }
+        public DateTime? UpdateDate { get; set; }
+        public int? SapXep { get; set; }
 
         public virtual ICollection<SanPham> SanPhams { get; set; }
     }

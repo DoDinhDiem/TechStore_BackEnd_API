@@ -11,6 +11,7 @@ namespace TechStore.Models
             BinhLuanSanPhams = new HashSet<BinhLuanSanPham>();
             ChiTietHoaDonBans = new HashSet<ChiTietHoaDonBan>();
             ChiTietHoaDonNhaps = new HashSet<ChiTietHoaDonNhap>();
+            ThongSos = new HashSet<ThongSo>();
         }
 
         public int Id { get; set; }
@@ -33,5 +34,6 @@ namespace TechStore.Models
         public virtual ICollection<BinhLuanSanPham> BinhLuanSanPhams { get; set; }
         public virtual ICollection<ChiTietHoaDonBan> ChiTietHoaDonBans { get; set; }
         public virtual ICollection<ChiTietHoaDonNhap> ChiTietHoaDonNhaps { get; set; }
+        public virtual ICollection<ThongSo> ThongSos { get; set; }
     }
 }

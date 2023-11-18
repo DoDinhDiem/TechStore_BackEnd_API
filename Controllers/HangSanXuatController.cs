@@ -18,7 +18,7 @@ namespace TechStore.Controllers
 
         [Route("GetAll_Hang")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<HangSanXuat>>> GetAll() 
+        public async Task<ActionResult<IEnumerable<HangSanXuat>>> GetAll()
         {
             try
             {
@@ -63,7 +63,7 @@ namespace TechStore.Controllers
 
         [Route("Create_Hang")]
         [HttpPost]
-        public async Task<ActionResult<HangSanXuat>> Create([FromBody]HangSanXuat model)
+        public async Task<ActionResult<HangSanXuat>> Create([FromBody] HangSanXuat model)
         {
             _context.HangSanXuats.Add(model);
             await _context.SaveChangesAsync();
@@ -94,7 +94,37 @@ namespace TechStore.Controllers
                     message = "Sửa hãng sản xuất thành công!"
                 });
             }
-            catch (Exception ex) 
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("Update_HangSanXuat_TrangThai/{id}")]
+        [HttpPut]
+        public async Task<ActionResult<HangSanXuat>> UpdateHang(int id)
+        {
+            try
+            {
+                var query = await (from hang in _context.HangSanXuats
+                                   where hang.Id == id
+                                   select hang).FirstOrDefaultAsync();
+                if (query == null)
+                {
+                    return NotFound();
+                }
+
+                query.TrangThai = !query.TrangThai;
+                query.UpdateDate = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Sửa trạng thái và UpdateDate của loại sản phẩm thành công!"
+                });
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -149,7 +179,7 @@ namespace TechStore.Controllers
                     message = "Danh sách đã được xóa thành công."
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -158,7 +188,7 @@ namespace TechStore.Controllers
         [Route("Search_Hang")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<HangSanXuat>>> Search(
-            [FromQuery]string? Keywork)
+            [FromQuery] string? Keywork)
         {
             IQueryable<HangSanXuat> query = _context.HangSanXuats;
 

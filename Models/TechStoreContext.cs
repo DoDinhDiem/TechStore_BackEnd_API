@@ -35,6 +35,7 @@ namespace TechStore.Models
         public virtual DbSet<Role> Roles { get; set; } = null!;
         public virtual DbSet<SanPham> SanPhams { get; set; } = null!;
         public virtual DbSet<Slider> Sliders { get; set; } = null!;
+        public virtual DbSet<ThongSo> ThongSos { get; set; } = null!;
         public virtual DbSet<TinTuc> TinTucs { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
 
@@ -238,7 +239,13 @@ namespace TechStore.Models
             {
                 entity.ToTable("HangSanXuat");
 
+                entity.Property(e => e.CreateDate)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
                 entity.Property(e => e.TenHang).HasMaxLength(255);
+
+                entity.Property(e => e.UpdateDate).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<HoaDonBan>(entity =>
@@ -476,6 +483,28 @@ namespace TechStore.Models
                 entity.ToTable("Slider");
 
                 entity.Property(e => e.TenSlide).HasMaxLength(255);
+            });
+
+            modelBuilder.Entity<ThongSo>(entity =>
+            {
+                entity.ToTable("ThongSo");
+
+                entity.Property(e => e.CreateDate)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.MoTa).HasColumnType("ntext");
+
+                entity.Property(e => e.SanPhamId).HasColumnName("SanPham_id");
+
+                entity.Property(e => e.TenThongSo).HasMaxLength(255);
+
+                entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+
+                entity.HasOne(d => d.SanPham)
+                    .WithMany(p => p.ThongSos)
+                    .HasForeignKey(d => d.SanPhamId)
+                    .HasConstraintName("FK_ThongSo_SanPham1");
             });
 
             modelBuilder.Entity<TinTuc>(entity =>
