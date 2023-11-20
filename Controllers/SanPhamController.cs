@@ -60,8 +60,7 @@ namespace TechStore.Controllers
                                        moTa = x.MoTa,
                                        loaiId = _context.Loais.Where(l => l.Id == x.LoaiId).Select(x => x.TenLoai).FirstOrDefault(),
                                        hangSanXuatId = _context.HangSanXuats.Where(h => h.Id == x.HangSanXuatId).Select(x => x.TenHang).FirstOrDefault(),
-                                       AnhSanPhamOnly = _context.AnhSanPhams.Where(a => a.SanPhamId == x.Id && a.TrangThai == true).Select(a => new AnhSanPham { DuongDanAnh = a.DuongDanAnh }).ToList(),
-                                       anhSanPhamList = _context.AnhSanPhams.Where(a => a.SanPhamId == x.Id && a.TrangThai == false).Select(a => new AnhSanPham { DuongDanAnh = a.DuongDanAnh }).ToList(),
+                                       anhSanPhamList = _context.AnhSanPhams.Where(a => a.SanPhamId == x.Id).Select(a => new AnhSanPham { DuongDanAnh = a.DuongDanAnh }).ToList(),
                                        thongSos = _context.ThongSos.Where(a => a.SanPhamId == x.Id).Select(a => new ThongSo { TenThongSo = a.TenThongSo, MoTa = a.MoTa }).ToList(),
                                        trangThaiSanPham = x.TrangThaiSanPham,
                                        trangThaiHoatDong = x.TrangThaiHoatDong,
@@ -93,6 +92,7 @@ namespace TechStore.Controllers
                     {
                         SanPhamId = model.Id,
                         DuongDanAnh = productImg.DuongDanAnh,
+                        TrangThai = productImg.TrangThai
                     };
                     newImages.Add(img);
                 }
@@ -105,7 +105,7 @@ namespace TechStore.Controllers
                         SanPhamId = model.Id,
                         TenThongSo = thongSo.TenThongSo,
                         MoTa = thongSo.MoTa,
-                        TrangThai = thongSo.TrangThai,
+                        TrangThai = true
                     };
                     newThongSoList.Add(newThongSo);
                 }
@@ -133,7 +133,6 @@ namespace TechStore.Controllers
                 var query = await (from sanPham in _context.SanPhams
                                    where sanPham.Id == model.Id
                                    select sanPham).FirstOrDefaultAsync(); ;
-
                 if (query == null)
                 {
                     return NotFound();
@@ -152,34 +151,35 @@ namespace TechStore.Controllers
 
                 var oldImages = _context.AnhSanPhams.Where(img => img.SanPhamId == model.Id);
                 _context.AnhSanPhams.RemoveRange(oldImages);
+
                 foreach (var productImg in model.AnhSanPhams)
                 {
                     var img = new AnhSanPham
                     {
-                        SanPhamId = model.Id,
+                        SanPhamId = query.Id,
                         DuongDanAnh = productImg.DuongDanAnh,
+                        TrangThai = false
                     };
                     _context.AnhSanPhams.Add(img);
                 }
-                _context.ThongSos.RemoveRange(_context.ThongSos.Where(t => t.SanPhamId == model.Id));
 
-                var newThongSoList = new List<ThongSo>();
+
+                _context.ThongSos.RemoveRange(_context.ThongSos.Where(t => t.SanPhamId == model.Id));
                 foreach (var thongSo in model.ThongSos)
                 {
                     var newThongSo = new ThongSo
                     {
-                        SanPhamId = model.Id,
+                        SanPhamId = query.Id,
                         TenThongSo = thongSo.TenThongSo,
                         MoTa = thongSo.MoTa,
                         TrangThai = true,
                         UpdateDate = DateTime.Now,
 
                     };
-                    newThongSoList.Add(newThongSo);
+                    _context.ThongSos.Add(newThongSo);
                 }
 
                 await _context.SaveChangesAsync();
-
                 return Ok(new
                 {
                     message = "Cập nhật sản phẩm thành công"
@@ -240,6 +240,11 @@ namespace TechStore.Controllers
                     _context.AnhSanPhams.Remove(img);
                 }
 
+                var productInfo = _context.ThongSos.Where(img => img.SanPhamId == productToDelete.Id).ToList();
+                foreach (var info in productInfo)
+                {
+                    _context.ThongSos.Remove(info);
+                }
                 _context.SanPhams.Remove(productToDelete);
                 await _context.SaveChangesAsync();
 
@@ -302,6 +307,7 @@ namespace TechStore.Controllers
                     moTa = x.MoTa,
                     loaiId = _context.Loais.Where(l => l.Id == x.LoaiId).Select(x => x.TenLoai).FirstOrDefault(),
                     hangSanXuatId = _context.HangSanXuats.Where(h => h.Id == x.HangSanXuatId).Select(x => x.TenHang).FirstOrDefault(),
+                    anhDaiDien = _context.AnhSanPhams.Where(a => a.SanPhamId == x.Id && a.TrangThai == true).Select(a => a.DuongDanAnh).FirstOrDefault(),
                     trangThaiSanPham = x.TrangThaiSanPham,
                     trangThaiHoatDong = x.TrangThaiHoatDong,
                     createDate = x.CreateDate,
@@ -322,6 +328,8 @@ namespace TechStore.Controllers
             {
                 query = query.Where(dc => dc.giaBan <= MaxGiaBan.Value);
             };
+
+            query = query.OrderByDescending(dc => dc.createDate);
             return Ok(query);
         }
 

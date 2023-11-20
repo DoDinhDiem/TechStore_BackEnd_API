@@ -48,7 +48,8 @@ namespace TechStore.Controllers
                                    select new
                                    {
                                        id = anh.Id,
-                                       sanPhamId = _context.SanPhams.Where(l => l.Id == anh.SanPhamId).Select(x => x.TenSanPham).FirstOrDefault(),
+                                       sanPhamId = anh.SanPhamId,
+                                       duongDanAnh = anh.DuongDanAnh,
                                        trangThai = anh.TrangThai
                                    }).Where(x => x.id == id).FirstOrDefaultAsync();
                 if (query == null)
@@ -65,45 +66,17 @@ namespace TechStore.Controllers
 
         [Route("Create_AnhSanPham")]
         [HttpPost]
-        public async Task<ActionResult<AnhSanPham>> CreateAnhOnly([FromBody] AnhSanPham model)
+        public async Task<ActionResult<AnhSanPham>> CreateAnh([FromBody] AnhSanPham model)
         {
             try
             {
-                var img = new AnhSanPham
-                {
-                    SanPhamId = model.SanPhamId,
-                    DuongDanAnh = model.DuongDanAnh,
-                    TrangThai = true
-                };
-                _context.AnhSanPhams.Add(img);
-                await _context.SaveChangesAsync();
-                return Ok(new
-                {
-                    message = "Thêm ảnh sản phẩm thành công"
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-
-        }
-
-        [Route("Create_AnhSanPhamList")]
-        [HttpPost]
-        public async Task<ActionResult<AnhSanPham>> CreateAnh([FromBody] List<AnhSanPham> danhSachAnh)
-        {
-            try
-            {
-                foreach (var anh in danhSachAnh)
-                {
                     var img = new AnhSanPham
                     {
-                        DuongDanAnh = anh.DuongDanAnh,
+                        SanPhamId = model.SanPhamId,
+                        DuongDanAnh = model.DuongDanAnh,
                         TrangThai = false
                     };
                     _context.AnhSanPhams.Add(img);
-                }
                 await _context.SaveChangesAsync();
                 return Ok(new
                 {
@@ -132,13 +105,12 @@ namespace TechStore.Controllers
                 }
 
                 query.DuongDanAnh = anh.DuongDanAnh;
-                query.TrangThai = anh.TrangThai;
                 query.UpdateDate = DateTime.Now;
-
                 await _context.SaveChangesAsync();
 
                 return Ok(new
                 {
+                    id = query.SanPhamId,
                     message = "Sửa ảnh sản phẩm thành công!"
                 });
             }
@@ -161,6 +133,7 @@ namespace TechStore.Controllers
                 {
                     return NotFound();
                 }
+                var SanPhamId = query.SanPhamId;
 
                 query.TrangThai = !query.TrangThai;
                 query.UpdateDate = DateTime.Now;
@@ -169,6 +142,7 @@ namespace TechStore.Controllers
 
                 return Ok(new
                 {
+                    id = SanPhamId,
                     message = "Sửa trạng thái và UpdateDate của ảnh sản phẩm thành công!"
                 });
             }
@@ -192,11 +166,12 @@ namespace TechStore.Controllers
                 {
                     return NotFound();
                 }
-
+                var sanPhamId = query.SanPhamId;
                 _context.Remove(query);
                 await _context.SaveChangesAsync();
                 return Ok(new
                 {
+                    id = sanPhamId,
                     message = "Xóa ảnh sản phẩm thành công!"
                 });
             }
@@ -212,18 +187,20 @@ namespace TechStore.Controllers
         {
             try
             {
-                var query = _context.Loais.Where(i => listId.Contains(i.Id)).ToList();
+                var query = _context.AnhSanPhams.Where(i => listId.Contains(i.Id)).ToList();
 
                 if (query.Count == 0)
                 {
                     return NotFound("Không tìm thấy bất kỳ mục nào để xóa.");
                 }
+                var sanPhamId = query.Select(item => item.SanPhamId).ToList();
 
-                _context.Loais.RemoveRange(query);
+                _context.AnhSanPhams.RemoveRange(query);
                 _context.SaveChanges();
 
                 return Ok(new
                 {
+                    id = sanPhamId,
                     message = "Danh sách đã được xóa thành công."
                 });
             }
