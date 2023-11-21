@@ -116,6 +116,7 @@ namespace TechStore.Controllers
                 if (System.IO.File.Exists(filePath))
                 {
                     System.IO.File.Delete(filePath);
+
                     if (System.IO.File.Exists(filePathClient))
                     {
                         System.IO.File.Delete(filePathClient);
