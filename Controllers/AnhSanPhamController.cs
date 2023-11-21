@@ -108,6 +108,20 @@ namespace TechStore.Controllers
                     return NotFound();
                 }
 
+                string fileName = query.DuongDanAnh;
+                string filePath = Path.Combine(_path, "products", fileName);
+                string filePathClient = Path.Combine(_pathClient, "productsClient", fileName);
+
+                // Xóa ảnh trên server
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                    if (System.IO.File.Exists(filePathClient))
+                    {
+                        System.IO.File.Delete(filePathClient);
+                    }
+                }
+
                 query.DuongDanAnh = anh.DuongDanAnh;
                 query.UpdateDate = DateTime.Now;
                 await _context.SaveChangesAsync();
@@ -136,20 +150,6 @@ namespace TechStore.Controllers
                 if (query == null)
                 {
                     return NotFound();
-                }
-
-                string fileName = query.DuongDanAnh;
-                string filePath = Path.Combine(_path, "products", fileName);
-                string filePathClient = Path.Combine(_pathClient, "productsClient", fileName);
-
-                // Xóa ảnh trên server
-                if (System.IO.File.Exists(filePath))
-                {
-                    System.IO.File.Delete(filePath);
-                    if (System.IO.File.Exists(filePathClient))
-                    {
-                        System.IO.File.Delete(filePathClient);
-                    }
                 }
 
                 var SanPhamId = query.SanPhamId;
