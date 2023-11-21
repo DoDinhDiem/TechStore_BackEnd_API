@@ -259,7 +259,7 @@ namespace TechStore.Controllers
                     if (System.IO.File.Exists(filePath))
                     {
                         System.IO.File.Delete(filePath);
-                        // Xóa ảnh trong folder client nếu cần
+
                         if (System.IO.File.Exists(filePathClient))
                         {
                             System.IO.File.Delete(filePathClient);

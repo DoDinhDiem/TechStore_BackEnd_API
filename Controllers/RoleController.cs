@@ -7,52 +7,50 @@ namespace TechStore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class LoaiController : ControllerBase
+    public class RoleController : ControllerBase
     {
         private TechStoreContext _context = new TechStoreContext();
-        public LoaiController(TechStoreContext context)
+        public RoleController(TechStoreContext context) 
         {
             _context = context;
         }
 
-        [Route("GetAll_Loai")]
+        [Route("GetAll_Role")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Loai>>> GetAll()
+        public async Task<ActionResult<IEnumerable<Role>>> GetAll()
         {
             try
             {
-                var query = await (from loai in _context.Loais
+                var query = await (from x in _context.Roles
                                    select new
                                    {
-                                       id = loai.Id,
-                                       tenLoai = loai.TenLoai,
-                                       trangThai = loai.TrangThai
+                                       id = x.Id,
+                                       tenRole = x.TenRole,
+                                       trangThai = x.TrangThai
                                    }).Where(x => x.trangThai == true).ToListAsync();
                 return Ok(query);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(ex);
             }
         }
 
-        [Route("GetById_Loai/{id}")]
+        [Route("GetById_Role/{id}")]
         [HttpGet]
-        public async Task<ActionResult<Loai>> GetById(int id)
+        public async Task<ActionResult<Role>> GetById(int id)
         {
             try
             {
-                var query = await (from loai in _context.Loais
-                                   where loai.Id == id
+                var query = await (from x in _context.Roles
+                                   where x.Id == id
                                    select new
                                    {
-                                       id = loai.Id,
-                                       tenLoai = loai.TenLoai,
-                                       trangThai = loai.TrangThai,
-                                       sapXep = loai.SapXep,
-                                       createDate = loai.CreateDate,
-                                       updateDate = loai.UpdateDate
+                                       id = x.Id,
+                                       tenRole = x.TenRole,
+                                       trangThai = x.TrangThai
                                    }).FirstOrDefaultAsync();
+
                 if (query == null)
                 {
                     return NotFound();
@@ -65,43 +63,17 @@ namespace TechStore.Controllers
             }
         }
 
-
-        [Route("Create_Loai")]
+        [Route("Create_Role")]
         [HttpPost]
-        public async Task<ActionResult<Loai>> CreateLoai([FromBody] Loai loai)
-        {
-            _context.Loais.Add(loai);
-            await _context.SaveChangesAsync();
-            return Ok(new
-            {
-                message = "Thêm loại sản phẩm thành công"
-            });
-        }
-
-        [Route("Update_Loai")]
-        [HttpPut]
-        public async Task<ActionResult<Loai>> UpdateLoai([FromBody] Loai loais)
+        public async Task<ActionResult<Role>> CreateRole([FromBody] Role model)
         {
             try
             {
-                var query = await (from loai in _context.Loais
-                                   where loai.Id == loais.Id
-                                   select loai).FirstOrDefaultAsync();
-                if (query == null)
-                {
-                    return NotFound();
-                }
-
-                query.TenLoai = loais.TenLoai;
-                query.TrangThai = loais.TrangThai;
-                query.SapXep = loais.SapXep;
-                query.UpdateDate = DateTime.Now;
-
+                _context.Roles.Add(model);
                 await _context.SaveChangesAsync();
-
                 return Ok(new
                 {
-                    message = "Sửa loại sản phẩm thành công!"
+                    message = "Thêm quyền thành công!"
                 });
             }
             catch (Exception ex)
@@ -110,20 +82,49 @@ namespace TechStore.Controllers
             }
         }
 
-        [Route("Update_Loai_TrangThai/{id}")]
+        [Route("Update_Role")]
         [HttpPut]
-        public async Task<ActionResult<Loai>> UpdateLoai(int id)
+        public async Task<ActionResult<Role>> UpdateRole([FromBody] Role model)
         {
             try
             {
-                var query = await (from loai in _context.Loais
-                                   where loai.Id == id
-                                   select loai).FirstOrDefaultAsync();
-                if (query == null)
+                var query = await (from x in _context.Roles 
+                                   where x.Id == model.Id
+                                   select x).FirstOrDefaultAsync();
+                if(query == null)
                 {
                     return NotFound();
                 }
 
+                query.TenRole = model.TenRole;
+                query.TrangThai = model.TrangThai;
+                query.UpdateDate = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+                return Ok(new
+                {
+                    message = "Sửa quyền thành công!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("Update_Role_TrangThai/{id}")]
+        [HttpPut]
+        public async Task<ActionResult<Role>> UpdateRoleTrangThai(int id)
+        {
+            try
+            {
+                var query = await (from x in _context.Roles
+                                   where x.Id == id
+                                   select x).FirstOrDefaultAsync();
+                if( query == null)
+                {
+                    return NotFound();
+                }
                 query.TrangThai = !query.TrangThai;
                 query.UpdateDate = DateTime.Now;
 
@@ -131,7 +132,7 @@ namespace TechStore.Controllers
 
                 return Ok(new
                 {
-                    message = "Sửa trạng thái và UpdateDate của loại sản phẩm thành công!"
+                    message = "Sửa trạng thái thành công!"
                 });
             }
             catch (Exception ex)
@@ -140,17 +141,16 @@ namespace TechStore.Controllers
             }
         }
 
-        [Route("Delete_Loai/{id}")]
+        [Route("Delete_Role/{id}")]
         [HttpDelete]
-        public async Task<ActionResult<Loai>> DeleteLoai(int id)
+        public async Task<ActionResult<Role>> DeleteRole(int id)
         {
             try
             {
-                var query = await (from loai in _context.Loais
-                                   where loai.Id == id
-                                   select loai).FirstOrDefaultAsync();
-
-                if (query == null)
+                var query = await (from x in _context.Roles
+                                   where x.Id == id
+                                   select x).FirstOrDefaultAsync();
+                if( query == null)
                 {
                     return NotFound();
                 }
@@ -159,7 +159,7 @@ namespace TechStore.Controllers
                 await _context.SaveChangesAsync();
                 return Ok(new
                 {
-                    message = "Xóa loại sản phẩm thành công!"
+                    message = "Xóa quyền thành công!"
                 });
             }
             catch (Exception ex)
@@ -168,20 +168,20 @@ namespace TechStore.Controllers
             }
         }
 
-        [Route("DeleteMany_Loai")]
+        [Route("DeleteMany_Role")]
         [HttpDelete]
         public IActionResult DeleteMany([FromBody] List<int> listId)
         {
             try
             {
-                var query = _context.Loais.Where(i => listId.Contains(i.Id)).ToList();
+                var query = _context.Roles.Where(i => listId.Contains(i.Id)).ToList();
 
                 if (query.Count == 0)
                 {
                     return NotFound("Không tìm thấy bất kỳ mục nào để xóa.");
                 }
 
-                _context.Loais.RemoveRange(query);
+                _context.Roles.RemoveRange(query);
                 _context.SaveChanges();
 
                 return Ok(new
@@ -195,16 +195,16 @@ namespace TechStore.Controllers
             }
         }
 
-        [Route("Search_Loai")]
+        [Route("Search_Role")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Loai>>> Search(
+        public async Task<ActionResult<IEnumerable<Role>>> Search(
             [FromQuery] string? Keywork)
         {
-            IQueryable<Loai> query = _context.Loais;
+            IQueryable<Role> query = _context.Roles;
 
             if (!string.IsNullOrEmpty(Keywork))
             {
-                query = query.Where(dc => dc.TenLoai.Contains(Keywork));
+                query = query.Where(dc => dc.TenRole.Contains(Keywork));
             }
 
             return Ok(query);
