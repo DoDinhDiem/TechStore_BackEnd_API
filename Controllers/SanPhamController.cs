@@ -148,10 +148,24 @@ namespace TechStore.Controllers
                 query.TrangThaiSanPham = model.TrangThaiSanPham;
                 query.TrangThaiHoatDong = model.TrangThaiHoatDong;
                 query.UpdateDate = DateTime.Now;
+                var oldImages = _context.AnhSanPhams.Where(img => img.SanPhamId == model.Id).ToList();
+                foreach (var oldImg in oldImages)
+                {
+                    string fileName = oldImg.DuongDanAnh;
+                    string filePath = Path.Combine(_path, "products", fileName);
+                    string filePathClient = Path.Combine(_pathClient, "productsClient", fileName);
+                    // Xóa ảnh trên server
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                        if (System.IO.File.Exists(filePathClient))
+                        {
+                            System.IO.File.Delete(filePathClient);
+                        }
+                    }
+                }
 
-                var oldImages = _context.AnhSanPhams.Where(img => img.SanPhamId == model.Id);
-                _context.AnhSanPhams.RemoveRange(oldImages);
-
+                // Sau khi xóa ảnh, thêm ảnh mới vào trong cơ sở dữ liệu
                 foreach (var productImg in model.AnhSanPhams)
                 {
                     var img = new AnhSanPham
@@ -237,6 +251,21 @@ namespace TechStore.Controllers
                 var productImages = _context.AnhSanPhams.Where(img => img.SanPhamId == productToDelete.Id).ToList();
                 foreach (var img in productImages)
                 {
+                    // Xóa ảnh trên server
+                    string fileName = img.DuongDanAnh; // Giả sử có một trường chứa tên file ảnh
+                    string filePath = Path.Combine(_path, "products", fileName);
+                    string filePathClient = Path.Combine(_pathClient, "productsClient", fileName);
+
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                        // Xóa ảnh trong folder client nếu cần
+                        if (System.IO.File.Exists(filePathClient))
+                        {
+                            System.IO.File.Delete(filePathClient);
+                        }
+                    }
+
                     _context.AnhSanPhams.Remove(img);
                 }
 
@@ -267,13 +296,13 @@ namespace TechStore.Controllers
             {
                 var query = _context.SanPhams.Where(i => listId.Contains(i.Id)).ToList();
                 var productImages = _context.AnhSanPhams.Where(img => listId.Contains(img.SanPhamId)).ToList();
-
+                var productParameter = _context.ThongSos.Where(para => listId.Contains(para.SanPhamId)).ToList();
                 if (query.Count == 0)
                 {
                     return NotFound("Không tìm thấy bất kỳ mục nào để xóa.");
                 }
+                _context.ThongSos.RemoveRange(productParameter);
                 _context.AnhSanPhams.RemoveRange(productImages);
-                _context.SaveChanges();
                 _context.SanPhams.RemoveRange(query);
                 _context.SaveChanges();
 

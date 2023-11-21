@@ -10,9 +10,13 @@ namespace TechStore.Controllers
     public class AnhSanPhamController : ControllerBase
     {
         private TechStoreContext _context = new TechStoreContext();
-        public AnhSanPhamController(TechStoreContext context)
+        private string _path;
+        private string _pathClient;
+        public AnhSanPhamController(TechStoreContext context, IConfiguration configuration)
         {
             _context = context;
+            _path = configuration["AppSettings:UrlImage"];
+            _pathClient = configuration["AppSettings:UrlImageClient"];
         }
 
         [Route("GetAll_AnhSanPham/{id}")]
@@ -133,6 +137,21 @@ namespace TechStore.Controllers
                 {
                     return NotFound();
                 }
+
+                string fileName = query.DuongDanAnh;
+                string filePath = Path.Combine(_path, "products", fileName);
+                string filePathClient = Path.Combine(_pathClient, "productsClient", fileName);
+
+                // Xóa ảnh trên server
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                    if (System.IO.File.Exists(filePathClient))
+                    {
+                        System.IO.File.Delete(filePathClient);
+                    }
+                }
+
                 var SanPhamId = query.SanPhamId;
 
                 query.TrangThai = !query.TrangThai;
@@ -165,6 +184,19 @@ namespace TechStore.Controllers
                 if (query == null)
                 {
                     return NotFound();
+                }
+                string fileName = query.DuongDanAnh;
+                string filePath = Path.Combine(_path, "products", fileName);
+                string filePathClient = Path.Combine(_pathClient, "productsClient", fileName);
+
+                // Xóa ảnh trên server
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                    if (System.IO.File.Exists(filePathClient))
+                    {
+                        System.IO.File.Delete(filePathClient);
+                    }
                 }
                 var sanPhamId = query.SanPhamId;
                 _context.Remove(query);

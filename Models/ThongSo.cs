@@ -6,7 +6,7 @@ namespace TechStore.Models
     public partial class ThongSo
     {
         public int Id { get; set; }
-        public int? SanPhamId { get; set; }
+        public int SanPhamId { get; set; }
         public string? TenThongSo { get; set; }
         public string? MoTa { get; set; }
         public bool? TrangThai { get; set; }
