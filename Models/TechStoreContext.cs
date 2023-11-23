@@ -22,6 +22,7 @@ namespace TechStore.Models
         public virtual DbSet<BinhLuanTinTuc> BinhLuanTinTucs { get; set; } = null!;
         public virtual DbSet<ChiTietHoaDonBan> ChiTietHoaDonBans { get; set; } = null!;
         public virtual DbSet<ChiTietHoaDonNhap> ChiTietHoaDonNhaps { get; set; } = null!;
+        public virtual DbSet<ChucVu> ChucVus { get; set; } = null!;
         public virtual DbSet<DanhMucTinTuc> DanhMucTinTucs { get; set; } = null!;
         public virtual DbSet<FeedBack> FeedBacks { get; set; } = null!;
         public virtual DbSet<HangSanXuat> HangSanXuats { get; set; } = null!;
@@ -196,6 +197,21 @@ namespace TechStore.Models
                     .HasConstraintName("FK_ChiTietHoaDonNhap_SanPham");
             });
 
+            modelBuilder.Entity<ChucVu>(entity =>
+            {
+                entity.ToTable("ChucVu");
+
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.CreateDate)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.TenChucVu).HasMaxLength(255);
+
+                entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+            });
+
             modelBuilder.Entity<DanhMucTinTuc>(entity =>
             {
                 entity.ToTable("DanhMucTinTuc");
@@ -315,6 +331,8 @@ namespace TechStore.Models
 
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
+                entity.Property(e => e.Avatar).HasMaxLength(255);
+
                 entity.Property(e => e.CreateDate)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
@@ -330,6 +348,8 @@ namespace TechStore.Models
                 entity.Property(e => e.NgaySinh).HasColumnType("date");
 
                 entity.Property(e => e.SoDienThoai).HasMaxLength(20);
+
+                entity.Property(e => e.TrangThai).HasMaxLength(255);
 
                 entity.Property(e => e.UpdateDate).HasColumnType("datetime");
 
@@ -392,6 +412,8 @@ namespace TechStore.Models
             {
                 entity.ToTable("NhanSu");
 
+                entity.Property(e => e.Avatar).HasMaxLength(255);
+
                 entity.Property(e => e.ChuVuId).HasColumnName("ChuVu_Id");
 
                 entity.Property(e => e.CreateDate)
@@ -417,6 +439,11 @@ namespace TechStore.Models
                 entity.Property(e => e.UpdateDate).HasColumnType("datetime");
 
                 entity.Property(e => e.UserId).HasColumnName("User_Id");
+
+                entity.HasOne(d => d.ChuVu)
+                    .WithMany(p => p.NhanSus)
+                    .HasForeignKey(d => d.ChuVuId)
+                    .HasConstraintName("FK_NhanSu_ChucVu");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.NhanSus)

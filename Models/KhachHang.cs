@@ -16,6 +16,8 @@ namespace TechStore.Models
         public string? GioiTinh { get; set; }
         public DateTime? CreateDate { get; set; }
         public DateTime? UpdateDate { get; set; }
+        public string? Avatar { get; set; }
+        public string? TrangThai { get; set; }
 
         public virtual User? User { get; set; }
     }

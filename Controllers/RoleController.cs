@@ -10,7 +10,7 @@ namespace TechStore.Controllers
     public class RoleController : ControllerBase
     {
         private TechStoreContext _context = new TechStoreContext();
-        public RoleController(TechStoreContext context) 
+        public RoleController(TechStoreContext context)
         {
             _context = context;
         }
@@ -88,10 +88,10 @@ namespace TechStore.Controllers
         {
             try
             {
-                var query = await (from x in _context.Roles 
+                var query = await (from x in _context.Roles
                                    where x.Id == model.Id
                                    select x).FirstOrDefaultAsync();
-                if(query == null)
+                if (query == null)
                 {
                     return NotFound();
                 }
@@ -121,7 +121,7 @@ namespace TechStore.Controllers
                 var query = await (from x in _context.Roles
                                    where x.Id == id
                                    select x).FirstOrDefaultAsync();
-                if( query == null)
+                if (query == null)
                 {
                     return NotFound();
                 }
@@ -150,7 +150,7 @@ namespace TechStore.Controllers
                 var query = await (from x in _context.Roles
                                    where x.Id == id
                                    select x).FirstOrDefaultAsync();
-                if( query == null)
+                if (query == null)
                 {
                     return NotFound();
                 }

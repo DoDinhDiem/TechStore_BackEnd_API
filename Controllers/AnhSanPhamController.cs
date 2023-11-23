@@ -74,13 +74,13 @@ namespace TechStore.Controllers
         {
             try
             {
-                    var img = new AnhSanPham
-                    {
-                        SanPhamId = model.SanPhamId,
-                        DuongDanAnh = model.DuongDanAnh,
-                        TrangThai = false
-                    };
-                    _context.AnhSanPhams.Add(img);
+                var img = new AnhSanPham
+                {
+                    SanPhamId = model.SanPhamId,
+                    DuongDanAnh = model.DuongDanAnh,
+                    TrangThai = false
+                };
+                _context.AnhSanPhams.Add(img);
                 await _context.SaveChangesAsync();
                 return Ok(new
                 {

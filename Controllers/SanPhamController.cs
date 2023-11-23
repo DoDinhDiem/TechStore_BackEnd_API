@@ -81,7 +81,7 @@ namespace TechStore.Controllers
         {
             try
             {
-
+                model.SoLuongTon = 0;
                 _context.SanPhams.Add(model);
 
                 var newImages = new List<AnhSanPham>();
@@ -149,6 +149,7 @@ namespace TechStore.Controllers
                 query.TrangThaiHoatDong = model.TrangThaiHoatDong;
                 query.UpdateDate = DateTime.Now;
                 var oldImages = _context.AnhSanPhams.Where(img => img.SanPhamId == model.Id).ToList();
+                _context.AnhSanPhams.RemoveRange(oldImages);
                 foreach (var oldImg in oldImages)
                 {
                     string fileName = oldImg.DuongDanAnh;
@@ -331,7 +332,7 @@ namespace TechStore.Controllers
                     tenSanPham = x.TenSanPham,
                     giaBan = x.GiaBan,
                     khuyenMai = x.KhuyenMai,
-                    soLuonTon = x.SoLuongTon,
+                    soLuongTon = x.SoLuongTon,
                     baoHanh = x.BaoHanh,
                     moTa = x.MoTa,
                     loaiId = _context.Loais.Where(l => l.Id == x.LoaiId).Select(x => x.TenLoai).FirstOrDefault(),
@@ -385,12 +386,12 @@ namespace TechStore.Controllers
                             filePaths.Add(filePath);
 
                             string filePathClient = $"productsClient/{file.FileName}";
-                    var fullPathClient = CreatePathFileClient(filePathClient);
-                    using (var fileStreamClient = new FileStream(fullPathClient, FileMode.Create))
-                    {
-                        await file.CopyToAsync(fileStreamClient);
-                    }
-                    filePaths.Add(filePathClient);
+                            var fullPathClient = CreatePathFileClient(filePathClient);
+                            using (var fileStreamClient = new FileStream(fullPathClient, FileMode.Create))
+                            {
+                                await file.CopyToAsync(fileStreamClient);
+                            }
+                            filePaths.Add(filePathClient);
                         }
                     }
 
