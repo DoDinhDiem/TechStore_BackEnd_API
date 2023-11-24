@@ -231,6 +231,7 @@ namespace TechStore.Controllers
                     ngayVaoLam = x.NgayVaoLam,
                     chucVu = _context.ChucVus.Where(u => u.Id == x.ChucVuId).Select(u => u.TenChucVu).FirstOrDefault(),
                     avartar = x.Avatar,
+                    trangThai = x.TrangThai, 
                     createDate = x.CreateDate
                 });
 
@@ -252,6 +253,5 @@ namespace TechStore.Controllers
             query = query.OrderByDescending(dc => dc.createDate);
             return Ok(query);
         }
-
     }
 }
