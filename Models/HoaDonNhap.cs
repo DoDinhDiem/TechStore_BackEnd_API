@@ -18,7 +18,7 @@ namespace TechStore.Models
         public int? UserId { get; set; }
 
         public virtual NhaCungCap? NhaCungCap { get; set; }
-        public virtual User? User { get; set; }
+        public virtual NhanSu? User { get; set; }
         public virtual ICollection<ChiTietHoaDonNhap> ChiTietHoaDonNhaps { get; set; }
     }
 }

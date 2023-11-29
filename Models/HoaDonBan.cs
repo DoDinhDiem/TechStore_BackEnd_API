@@ -14,9 +14,6 @@ namespace TechStore.Models
         public string? HoTen { get; set; }
         public string? SoDienThoai { get; set; }
         public string? Email { get; set; }
-        public string? Tinh { get; set; }
-        public string? Huyen { get; set; }
-        public string? Xa { get; set; }
         public string? DiaChi { get; set; }
         public string? GhiChu { get; set; }
         public int? TrangThai { get; set; }
@@ -26,7 +23,7 @@ namespace TechStore.Models
         public decimal? GiamGia { get; set; }
         public int? TrangThaiThanhToan { get; set; }
 
-        public virtual User? User { get; set; }
+        public virtual KhachHang? User { get; set; }
         public virtual ICollection<ChiTietHoaDonBan> ChiTietHoaDonBans { get; set; }
     }
 }

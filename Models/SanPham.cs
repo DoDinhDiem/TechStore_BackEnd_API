@@ -9,6 +9,7 @@ namespace TechStore.Models
         {
             AnhSanPhams = new HashSet<AnhSanPham>();
             BinhLuanSanPhams = new HashSet<BinhLuanSanPham>();
+            Carts = new HashSet<Cart>();
             ChiTietHoaDonBans = new HashSet<ChiTietHoaDonBan>();
             ChiTietHoaDonNhaps = new HashSet<ChiTietHoaDonNhap>();
             ThongSos = new HashSet<ThongSo>();
@@ -32,6 +33,7 @@ namespace TechStore.Models
         public virtual Loai? Loai { get; set; }
         public virtual ICollection<AnhSanPham> AnhSanPhams { get; set; }
         public virtual ICollection<BinhLuanSanPham> BinhLuanSanPhams { get; set; }
+        public virtual ICollection<Cart> Carts { get; set; }
         public virtual ICollection<ChiTietHoaDonBan> ChiTietHoaDonBans { get; set; }
         public virtual ICollection<ChiTietHoaDonNhap> ChiTietHoaDonNhaps { get; set; }
         public virtual ICollection<ThongSo> ThongSos { get; set; }

@@ -21,7 +21,7 @@ namespace TechStore.Models
         public int? NguoiViet { get; set; }
 
         public virtual DanhMucTinTuc? DanhMuc { get; set; }
-        public virtual User? NguoiVietNavigation { get; set; }
+        public virtual NhanSu? NguoiVietNavigation { get; set; }
         public virtual ICollection<AnhTinTuc> AnhTinTucs { get; set; }
         public virtual ICollection<BinhLuanTinTuc> BinhLuanTinTucs { get; set; }
     }

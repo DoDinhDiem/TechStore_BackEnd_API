@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechStore.Models;
 using TechStore.Helper;
-using Microsoft.AspNetCore.SignalR;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TechStore.Controllers
 {
@@ -13,9 +13,11 @@ namespace TechStore.Controllers
     public class NhanSuController : ControllerBase
     {
         private TechStoreContext _context = new TechStoreContext();
-        public NhanSuController(TechStoreContext context)
+        private string _path;
+        public NhanSuController(TechStoreContext context, IConfiguration configuration)
         {
             _context = context;
+            _path = configuration["AppSettings:UrlImage"];
         }
 
         [Route("GetAll_NhanSu")]
@@ -55,23 +57,25 @@ namespace TechStore.Controllers
             try
             {
                 var query = await (from x in _context.NhanSus
+                                   join u in _context.Users on x.UserId equals u.Id
                                    where x.Id == id
                                    select new
                                    {
                                        id = x.Id,
-                                       taikhoan = _context.Users.Where(u => u.Id == x.UserId).Select(u => u.UserName).FirstOrDefault(),
+                                       userId = x.UserId,
                                        firstName = x.FirstName,
                                        lastName = x.LastName,
-                                       email = x.Email,
                                        soDienThoai = x.SoDienThoai,
                                        diaChi = x.DiaChi,
                                        ngaySinh = x.NgaySinh,
                                        gioiTinh = x.GioiTinh,
                                        ngayVaoLam = x.NgayVaoLam,
-                                       chucVu = _context.ChucVus.Where(u => u.Id == x.ChucVuId).Select(u => u.TenChucVu).FirstOrDefault(),
-                                       avartar = x.Avatar
+                                       chucVuId = _context.ChucVus.Where(u => u.Id == x.ChucVuId).Select(u => u.TenChucVu).FirstOrDefault(),
+                                       roleId = u.Role.TenRole,
+                                       avartar = x.Avatar,
+                                       trangThai = x.TrangThai
                                    }).FirstOrDefaultAsync();
-                if (query != null)
+                if (query == null)
                 {
                     return NotFound();
                 }
@@ -85,44 +89,57 @@ namespace TechStore.Controllers
 
         [Route("Create_NhanSu")]
         [HttpPost]
-        public async Task<ActionResult<string>> Create([FromBody] NhanSu model)
+        public async Task<IActionResult> Create([FromBody] NhanSuDto model)
         {
             try
             {
-                if (_context.Users.Any(u => u.UserName == model.User.UserName))
+                if (_context.Users.Any(u => u.UserName == model.UserName))
                 {
-                    return BadRequest(new 
-                    { 
+                    return NotFound(new
+                    {
                         message = "UserName đã tồn tại! Vui lòng nhập UserName khác."
                     });
                 }
-                if(_context.Users.Any(u => u.Email == model.Email))
-                    {
-                    return BadRequest(new
+                if (_context.Users.Any(u => u.Email == model.Email))
+                {
+                    return NotFound(new
                     {
                         message = "Email đã tồn tại! Vui lòng nhập Email khác."
                     });
                 }
-
                 var user = new User
                 {
-                    UserName = model.User.UserName,
-                    PassWord = PasswordHasher.HashPassword(model.User.PassWord),
+                    UserName = model.UserName,
+                    PassWord = PasswordHasher.HashPassword(model.PassWord),
                     Email = model.Email,
-                    RoleId = model.User.RoleId
+                    RoleId = model.RoleId
                 };
-
                 _context.Users.Add(user);
+                await _context.SaveChangesAsync();
 
-                model.UserId = user.Id;
-                _context.NhanSus.Add(model);
+                var nhansu = new NhanSu
+                {
+                    UserId = user.Id,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    SoDienThoai = model.SoDienThoai,
+                    DiaChi = model.DiaChi,
+                    NgaySinh = model.NgaySinh,
+                    GioiTinh = model.GioiTinh,
+                    NgayVaoLam = model.NgayVaoLam,
+                    ChucVuId = model.ChucVuId,
+                    Avatar = model.Avatar,
+                    TrangThai = model.TrangThai
+                };
+                _context.NhanSus.Add(nhansu);
                 await _context.SaveChangesAsync();
 
                 return Ok(new
                 {
                     message = "Thêm nhân sự thành công!"
                 });
-                
+
             }
             catch (Exception ex)
             {
@@ -132,33 +149,45 @@ namespace TechStore.Controllers
 
         [Route("Update_NhanSu")]
         [HttpPut]
-        public async Task<ActionResult<string>> Update([FromBody] NhanSu model)
+        public async Task<IActionResult> Update([FromBody] NhanSuDto  model)
         {
             try
             {
-                var user = await (from us in  _context.Users
-                                   where us.Id == model.UserId
-                                   select us
-                                   ).FirstOrDefaultAsync();
                 var nhansu = await (from ns in _context.NhanSus
                                     where ns.Id == model.Id
                                     select ns
                                     ).FirstOrDefaultAsync();
-                if(nhansu == null || user == null)
+                var user = await (from us in _context.Users
+                                  where us.Id == nhansu.UserId
+                                  select us
+                                   ).FirstOrDefaultAsync();
+                if (nhansu == null || user == null)
                 {
                     return NotFound();
                 }
 
-                user.RoleId = model.User.RoleId;
+                if (nhansu.Avatar != null)
+                {
+                    string fileName = nhansu.Avatar;
+                    string filePath = Path.Combine(_path, "personnel", fileName);
+
+                    // Xóa ảnh trên server
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
+                
+                user.RoleId = model.RoleId;
                 user.UpdateDate = DateTime.Now;
 
                 nhansu.FirstName = model.FirstName;
                 nhansu.LastName = model.LastName;
                 nhansu.SoDienThoai = model.SoDienThoai;
                 nhansu.DiaChi = model.DiaChi;
-                nhansu.NgaySinh = model.NgaySinh;
+                nhansu.NgaySinh = DateTime.UtcNow; ;
                 nhansu.GioiTinh = model.GioiTinh;
-                nhansu.NgayVaoLam = model.NgayVaoLam;
+                nhansu.NgayVaoLam = DateTime.UtcNow; ;
                 nhansu.Avatar = model.Avatar;
                 nhansu.TrangThai = model.TrangThai;
                 nhansu.ChucVuId = model.ChucVuId;
@@ -174,39 +203,37 @@ namespace TechStore.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message); 
+                return BadRequest(ex.Message);
             }
         }
 
-        [Route("Update_TrangThai_NhanSu/{id}")]
+        [Route("Update_NhanSu_TrangThai/{id}")]
         [HttpPut]
         public async Task<ActionResult<NhanSu>> UpdateTrangThai(int id)
         {
             try
             {
+                var nhansu = await (from ns in _context.NhanSus
+                                    where ns.Id == id
+                                    select ns).FirstOrDefaultAsync();
+                if (nhansu == null)
+                {
+                    return NotFound();
+                }
 
+                nhansu.TrangThai = !nhansu.TrangThai;
+                nhansu.UpdateDate = DateTime.Now;
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Sửa trạng thái thành công!"
+                });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-
-            var nhansu = await (from ns in _context.NhanSus
-                                where ns.Id == id
-                                select ns).FirstOrDefaultAsync();
-            if(nhansu == null)
-            {
-                return NotFound();
-            }
-
-            nhansu.TrangThai = !nhansu.TrangThai;
-            nhansu.UpdateDate = DateTime.Now;
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                message = "Sửa trạng thái thành công!"
-            });
         }
 
         [Route("Search_NhanSu")]
@@ -217,23 +244,24 @@ namespace TechStore.Controllers
            [FromQuery] string? DiaChi)
         {
             var query = _context.NhanSus
-                .Select(x => new
-                {
-                    id = x.Id,
-                    taikhoan = _context.Users.Where(u => u.Id == x.UserId).Select(u => u.UserName).FirstOrDefault(),
-                    firstName = x.FirstName,
-                    lastName = x.LastName,
-                    email = x.Email,
-                    soDienThoai = x.SoDienThoai,
-                    diaChi = x.DiaChi,
-                    ngaySinh = x.NgaySinh,
-                    gioiTinh = x.GioiTinh,
-                    ngayVaoLam = x.NgayVaoLam,
-                    chucVu = _context.ChucVus.Where(u => u.Id == x.ChucVuId).Select(u => u.TenChucVu).FirstOrDefault(),
-                    avartar = x.Avatar,
-                    trangThai = x.TrangThai, 
-                    createDate = x.CreateDate
-                });
+                        .Join(_context.Users, ns => ns.UserId, u => u.Id, (ns, u) => new
+                        {
+                            id = ns.Id,
+                            userName = _context.Users.Where(usr => usr.Id == ns.UserId).Select(usr => usr.UserName).FirstOrDefault(),
+                            firstName = ns.FirstName,
+                            lastName = ns.LastName,
+                            email = ns.Email,
+                            soDienThoai = ns.SoDienThoai,
+                            diaChi = ns.DiaChi,
+                            ngaySinh = ns.NgaySinh,
+                            gioiTinh = ns.GioiTinh,
+                            ngayVaoLam = ns.NgayVaoLam,
+                            chucVuId = _context.ChucVus.Where(chucVu => chucVu.Id == ns.ChucVuId).Select(chucVu => chucVu.TenChucVu).FirstOrDefault(),
+                            avartar = ns.Avatar,
+                            roleId = u.Role.TenRole,
+                            trangThai = ns.TrangThai,
+                            createDate = ns.CreateDate
+                        });
 
             if (!string.IsNullOrEmpty(Keywork))
             {
@@ -252,6 +280,54 @@ namespace TechStore.Controllers
 
             query = query.OrderByDescending(dc => dc.createDate);
             return Ok(query);
+        }
+
+        [Route("upload")]
+        [HttpPost, DisableRequestSizeLimit]
+        public async Task<IActionResult> Upload(IFormFile file)
+        {
+            try
+            {
+                if (file.Length > 0)
+                {
+                    string filePath = $"personnel/{file.FileName}";
+                    var fullPath = CreatePathFile(filePath);
+
+                    using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(fileStream);
+                    }
+
+
+                    return Ok(new { filePath });
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [NonAction]
+        private string CreatePathFile(string RelativePathFileName)
+        {
+            try
+            {
+                string serverRootPathFolder = _path;
+                string fullPathFile = $@"{serverRootPathFolder}\{RelativePathFileName}";
+                string fullPathFolder = System.IO.Path.GetDirectoryName(fullPathFile);
+                if (!Directory.Exists(fullPathFolder))
+                    Directory.CreateDirectory(fullPathFolder);
+                return fullPathFile;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
     }
 }

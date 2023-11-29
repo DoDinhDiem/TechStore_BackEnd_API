@@ -70,12 +70,20 @@ namespace TechStore.Controllers
         [HttpPost]
         public async Task<ActionResult<Loai>> CreateLoai([FromBody] Loai loai)
         {
-            _context.Loais.Add(loai);
-            await _context.SaveChangesAsync();
-            return Ok(new
+            try
             {
-                message = "Thêm loại sản phẩm thành công"
-            });
+                _context.Loais.Add(loai);
+                await _context.SaveChangesAsync();
+                return Ok(new
+                {
+                    message = "Thêm loại sản phẩm thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [Route("Update_Loai")]

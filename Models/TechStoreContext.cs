@@ -20,6 +20,7 @@ namespace TechStore.Models
         public virtual DbSet<AnhTinTuc> AnhTinTucs { get; set; } = null!;
         public virtual DbSet<BinhLuanSanPham> BinhLuanSanPhams { get; set; } = null!;
         public virtual DbSet<BinhLuanTinTuc> BinhLuanTinTucs { get; set; } = null!;
+        public virtual DbSet<Cart> Carts { get; set; } = null!;
         public virtual DbSet<ChiTietHoaDonBan> ChiTietHoaDonBans { get; set; } = null!;
         public virtual DbSet<ChiTietHoaDonNhap> ChiTietHoaDonNhaps { get; set; } = null!;
         public virtual DbSet<ChucVu> ChucVus { get; set; } = null!;
@@ -45,7 +46,7 @@ namespace TechStore.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Data Source=DINHDIEMIT;Initial Catalog=TechStore;Integrated Security=True");
+                optionsBuilder.UseSqlServer("Data Source=DINHDIEMIT;Initial Catalog=TechStore;Integrated Security=True;Trust Server Certificate=True");
             }
         }
 
@@ -111,11 +112,6 @@ namespace TechStore.Models
                     .WithMany(p => p.BinhLuanSanPhams)
                     .HasForeignKey(d => d.SanPhamId)
                     .HasConstraintName("FK_BinhLuanSanPham_SanPham");
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.BinhLuanSanPhams)
-                    .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_BinhLuanSanPham_User");
             });
 
             modelBuilder.Entity<BinhLuanTinTuc>(entity =>
@@ -144,11 +140,31 @@ namespace TechStore.Models
                     .WithMany(p => p.BinhLuanTinTucs)
                     .HasForeignKey(d => d.TinTucId)
                     .HasConstraintName("FK_BinhLuanTinTuc_TinTuc");
+            });
 
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.BinhLuanTinTucs)
-                    .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_BinhLuanTinTuc_User");
+            modelBuilder.Entity<Cart>(entity =>
+            {
+                entity.ToTable("Cart");
+
+                entity.Property(e => e.AnhSanPham).HasMaxLength(255);
+
+                entity.Property(e => e.GiaBan).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.KhachHangId).HasColumnName("KhachHang_Id");
+
+                entity.Property(e => e.SanPhamId).HasColumnName("SanPham_Id");
+
+                entity.Property(e => e.TenSanPham).HasMaxLength(255);
+
+                entity.HasOne(d => d.KhachHang)
+                    .WithMany(p => p.Carts)
+                    .HasForeignKey(d => d.KhachHangId)
+                    .HasConstraintName("FK_Cart_KhachHang");
+
+                entity.HasOne(d => d.SanPham)
+                    .WithMany(p => p.Carts)
+                    .HasForeignKey(d => d.SanPhamId)
+                    .HasConstraintName("FK_Cart_SanPham");
             });
 
             modelBuilder.Entity<ChiTietHoaDonBan>(entity =>
@@ -201,8 +217,6 @@ namespace TechStore.Models
             {
                 entity.ToTable("ChucVu");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
-
                 entity.Property(e => e.CreateDate)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
@@ -248,7 +262,7 @@ namespace TechStore.Models
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.FeedBacks)
                     .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_FeedBack_User");
+                    .HasConstraintName("FK_FeedBack_KhachHang");
             });
 
             modelBuilder.Entity<HangSanXuat>(entity =>
@@ -282,22 +296,16 @@ namespace TechStore.Models
 
                 entity.Property(e => e.HoTen).HasMaxLength(255);
 
-                entity.Property(e => e.Huyen).HasMaxLength(255);
-
                 entity.Property(e => e.SoDienThoai).HasMaxLength(20);
-
-                entity.Property(e => e.Tinh).HasMaxLength(255);
 
                 entity.Property(e => e.TongTien).HasColumnType("decimal(18, 0)");
 
                 entity.Property(e => e.UserId).HasColumnName("User_id");
 
-                entity.Property(e => e.Xa).HasMaxLength(255);
-
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.HoaDonBans)
                     .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_HoaDonBan_User");
+                    .HasConstraintName("FK_HoaDonBan_KhachHang");
             });
 
             modelBuilder.Entity<HoaDonNhap>(entity =>
@@ -322,7 +330,7 @@ namespace TechStore.Models
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.HoaDonNhaps)
                     .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_HoaDonNhap_User");
+                    .HasConstraintName("FK_HoaDonNhap_NhanSu");
             });
 
             modelBuilder.Entity<KhachHang>(entity =>
@@ -414,7 +422,7 @@ namespace TechStore.Models
 
                 entity.Property(e => e.Avatar).HasMaxLength(255);
 
-                entity.Property(e => e.ChuVuId).HasColumnName("ChuVu_Id");
+                entity.Property(e => e.ChucVuId).HasColumnName("ChucVu_Id");
 
                 entity.Property(e => e.CreateDate)
                     .HasColumnType("datetime")
@@ -440,9 +448,9 @@ namespace TechStore.Models
 
                 entity.Property(e => e.UserId).HasColumnName("User_Id");
 
-                entity.HasOne(d => d.ChuVu)
+                entity.HasOne(d => d.ChucVu)
                     .WithMany(p => p.NhanSus)
-                    .HasForeignKey(d => d.ChuVuId)
+                    .HasForeignKey(d => d.ChucVuId)
                     .HasConstraintName("FK_NhanSu_ChucVu");
 
                 entity.HasOne(d => d.User)
@@ -558,7 +566,7 @@ namespace TechStore.Models
                 entity.HasOne(d => d.NguoiVietNavigation)
                     .WithMany(p => p.TinTucs)
                     .HasForeignKey(d => d.NguoiViet)
-                    .HasConstraintName("FK_TinTuc_User");
+                    .HasConstraintName("FK_TinTuc_NhanSu");
             });
 
             modelBuilder.Entity<User>(entity =>

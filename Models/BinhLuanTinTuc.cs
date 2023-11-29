@@ -16,6 +16,5 @@ namespace TechStore.Models
         public DateTime? UpdateDate { get; set; }
 
         public virtual TinTuc? TinTuc { get; set; }
-        public virtual User? User { get; set; }
     }
 }

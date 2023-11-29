@@ -30,7 +30,7 @@ namespace TechStore.Controllers
                                    }).Where(c => c.trangThai == true).ToListAsync();
                 return Ok(query);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -50,7 +50,7 @@ namespace TechStore.Controllers
                                        tenChucVu = x.TenChucVu,
                                        trangThai = x.TrangThai
                                    }).FirstOrDefaultAsync();
-                if(query == null)
+                if (query == null)
                 {
                     return NotFound();
                 }
@@ -79,6 +79,7 @@ namespace TechStore.Controllers
             {
                 return BadRequest(ex.Message);
             }
+
         }
 
         [Route("Update_ChucVu")]
@@ -90,8 +91,8 @@ namespace TechStore.Controllers
                 var query = await (from x in _context.ChucVus
                                    where x.Id == model.Id
                                    select x).FirstOrDefaultAsync();
-                if(query == null) 
-                { 
+                if (query == null)
+                {
                     return NotFound();
                 }
 
@@ -105,7 +106,7 @@ namespace TechStore.Controllers
                     message = "Sửa chức vụ thành công!"
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -120,7 +121,7 @@ namespace TechStore.Controllers
                 var query = await (from x in _context.ChucVus
                                    where x.Id == id
                                    select x).FirstOrDefaultAsync();
-                if(query == null)
+                if (query == null)
                 {
                     return NotFound();
                 }
@@ -132,7 +133,7 @@ namespace TechStore.Controllers
                     message = "Sửa trạng thái thành công!"
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -171,7 +172,7 @@ namespace TechStore.Controllers
             try
             {
                 var query = _context.ChucVus.Where(i => listId.Contains(i.Id)).ToList();
-                if(query.Count == 0)
+                if (query.Count == 0)
                 {
                     return NotFound("Không tìm thất bất kỳ mục nào!");
                 }
@@ -180,7 +181,7 @@ namespace TechStore.Controllers
                 return Ok(new
                 {
                     message = "Danh sách đã được xóa thành công!"
-                });                    
+                });
             }
             catch (Exception ex)
             {
@@ -188,12 +189,12 @@ namespace TechStore.Controllers
             }
         }
 
-        [Route("Select_ChucVu")]
+        [Route("Search_ChucVu")]
         [HttpGet]
         public async Task<ActionResult<ChucVu>> Select([FromQuery] string? KeyWork)
         {
             IQueryable<ChucVu> query = _context.ChucVus;
-            if(!string.IsNullOrEmpty(KeyWork))
+            if (!string.IsNullOrEmpty(KeyWork))
             {
                 query = query.Where(x => x.TenChucVu.Contains(KeyWork));
             }

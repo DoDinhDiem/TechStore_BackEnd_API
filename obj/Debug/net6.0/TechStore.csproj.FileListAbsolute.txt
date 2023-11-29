@@ -66,3 +66,4 @@ D:\TechStore\API\TechStore\obj\Debug\net6.0\refint\TechStore.dll
 D:\TechStore\API\TechStore\obj\Debug\net6.0\TechStore.pdb
 D:\TechStore\API\TechStore\obj\Debug\net6.0\TechStore.genruntimeconfig.cache
 D:\TechStore\API\TechStore\obj\Debug\net6.0\ref\TechStore.dll
+D:\TechStore\API\TechStore\obj\Debug\net6.0\TechStore.sourcelink.json

@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System;
 using TechStore.Helper;
 using TechStore.Models;
 
@@ -11,9 +13,13 @@ namespace TechStore.Controllers
     public class KhachHangController : ControllerBase
     {
         private TechStoreContext _context;
-        public KhachHangController(TechStoreContext context)
+        private string _path;
+        private string _pathClient;
+        public KhachHangController(TechStoreContext context, IConfiguration configuration)
         {
             _context = context;
+            _path = configuration["AppSettings:UrlImage"];
+            _pathClient = configuration["AppSettings:UrlImageClient"];
         }
 
         [Route("GetAll_KhachHang")]
@@ -64,7 +70,7 @@ namespace TechStore.Controllers
                                        gioiTinh = x.GioiTinh,
                                        avatar = x.Avatar
                                    }).FirstOrDefaultAsync();
-                if(query == null) 
+                if (query == null)
                 {
                     return NotFound();
                 }
@@ -78,11 +84,11 @@ namespace TechStore.Controllers
 
         [Route("Create_KhachHang")]
         [HttpPost]
-        public async Task<ActionResult<KhachHang>> Create([FromBody] KhachHang model)
+        public async Task<IActionResult> Create([FromBody] KhachHangDto model)
         {
             try
             {
-                if (_context.Users.Any(u => u.UserName == model.User.UserName))
+                if (_context.Users.Any(u => u.UserName == model.UserName))
                 {
                     return BadRequest(new
                     {
@@ -99,16 +105,29 @@ namespace TechStore.Controllers
 
                 var user = new User
                 {
-                    UserName = model.User.UserName,
-                    PassWord = PasswordHasher.HashPassword(model.User.PassWord),
+                    UserName = model.UserName,
+                    PassWord = PasswordHasher.HashPassword(model.PassWord),
                     Email = model.Email,
-                    RoleId = model.User.RoleId
+                    RoleId = model.RoleId
                 };
 
                 _context.Users.Add(user);
+                await _context.SaveChangesAsync();
 
-                model.UserId = user.Id;
-                _context.KhachHangs.Add(model);
+                var khachhang = new KhachHang
+                {
+                    UserId = user.Id,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    SoDienThoai = model.SoDienThoai,
+                    DiaChi = model.DiaChi,
+                    NgaySinh = model.NgaySinh,
+                    GioiTinh = model.GioiTinh,
+                    Avatar = model.Avatar,
+                    TrangThai = model.TrangThai
+                };
+                _context.KhachHangs.Add(khachhang);
                 await _context.SaveChangesAsync();
 
                 return Ok(new
@@ -132,9 +151,22 @@ namespace TechStore.Controllers
                 var query = await (from x in _context.KhachHangs
                                    where x.Id == model.Id
                                    select x).FirstOrDefaultAsync();
-                if(query == null)
+                if (query == null)
                 {
                     return NotFound();
+                }
+
+                string fileName = query.Avatar;
+                string filePath = Path.Combine(_path, "custummers", fileName);
+                string filePathClient = Path.Combine(_pathClient, "custummers", fileName);
+
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                    if (System.IO.File.Exists(filePathClient))
+                    {
+                        System.IO.File.Delete(filePathClient);
+                    }
                 }
                 query.FirstName = model.FirstName;
                 query.LastName = model.LastName;
@@ -158,36 +190,35 @@ namespace TechStore.Controllers
             }
         }
 
-        [Route("Delete_KhachHang/{id}")]
-        [HttpDelete]
-        public async Task<ActionResult<KhachHang>> Delete(int id)
-        {
-            try
-            {
-                var query = await (from x in _context.KhachHangs
-                                   where x.Id == id
-                                   select x).FirstOrDefaultAsync();
-                var user = await (from x in _context.Users
-                                  where x.Id == query.UserId
-                                  select x).FirstOrDefaultAsync();
-                if(query == null || user == null) 
-                { 
-                    return NotFound();
-                }
-                _context.KhachHangs.Remove(query);
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
+        //[Route("Update_KhachHang_TrangThai/{id}")]
+        //[HttpPut]
+        //public async Task<ActionResult<KhachHang>> UpdateTrangThai(int id)
+        //{
+        //    try
+        //    {
+        //        var khachhang = await (from ns in _context.KhachHangs
+        //                            where ns.Id == id
+        //                            select ns).FirstOrDefaultAsync();
+        //        if (khachhang == null)
+        //        {
+        //            return NotFound();
+        //        }
 
-                return Ok(new
-                {
-                    message = "Xóa tài khoản thành công"
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //        khachhang.TrangThai = !khachhang.TrangThai;
+        //        khachhang.UpdateDate = DateTime.Now;
+        //        await _context.SaveChangesAsync();
+
+        //        return Ok(new
+        //        {
+        //            message = "Sửa trạng thái thành công!"
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
+
 
         [Route("Search_KhachHang")]
         [HttpGet]
@@ -200,7 +231,7 @@ namespace TechStore.Controllers
                 .Select(x => new
                 {
                     id = x.Id,
-                    taikhoan = _context.Users.Where(u => u.Id == x.UserId).Select(u => u.UserName).FirstOrDefault(),
+                    userName = _context.Users.Where(u => u.Id == x.UserId).Select(u => u.UserName).FirstOrDefault(),
                     firstName = x.FirstName,
                     lastName = x.LastName,
                     email = x.Email,
@@ -231,6 +262,78 @@ namespace TechStore.Controllers
             query = query.OrderByDescending(dc => dc.createDate);
             return Ok(query);
         }
-    }
 
+        [Route("upload")]
+        [HttpPost, DisableRequestSizeLimit]
+        public async Task<IActionResult> Upload(IFormFile file)
+        {
+            try
+            {
+                if (file.Length > 0)
+                {
+                    string filePath = $"custumer/{file.FileName}";
+                    var fullPath = CreatePathFile(filePath);
+
+                    using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(fileStream);
+                    }
+
+                    string filePathClient = $"custumerClient/{file.FileName}";
+                    var fullPathClient = CreatePathFileClient(filePathClient);
+                    using (var fileStreamClient = new FileStream(fullPathClient, FileMode.Create))
+                    {
+                        await file.CopyToAsync(fileStreamClient);
+                    }
+
+                    return Ok(new { filePath, filePathClient});
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [NonAction]
+        private string CreatePathFile(string RelativePathFileName)
+        {
+            try
+            {
+                string serverRootPathFolder = _path;
+                string fullPathFile = $@"{serverRootPathFolder}\{RelativePathFileName}";
+                string fullPathFolder = System.IO.Path.GetDirectoryName(fullPathFile);
+                if (!Directory.Exists(fullPathFolder))
+                    Directory.CreateDirectory(fullPathFolder);
+                return fullPathFile;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
+
+
+        [NonAction]
+        private string CreatePathFileClient(string RelativePathFileName)
+        {
+            try
+            {
+                string serverRootPathFolderClient = _pathClient;
+                string fullPathFileClient = $@"{serverRootPathFolderClient}\{RelativePathFileName}";
+                string fullPathFolderClient = Path.GetDirectoryName(fullPathFileClient);
+                if (!Directory.Exists(fullPathFolderClient))
+                    Directory.CreateDirectory(fullPathFolderClient);
+                return fullPathFileClient;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
+    }
 }

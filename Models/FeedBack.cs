@@ -13,6 +13,6 @@ namespace TechStore.Models
         public DateTime? UpdateDate { get; set; }
         public int? UserId { get; set; }
 
-        public virtual User? User { get; set; }
+        public virtual KhachHang? User { get; set; }
     }
 }
