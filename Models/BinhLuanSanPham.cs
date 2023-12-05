@@ -16,5 +16,6 @@ namespace TechStore.Models
         public int? UserId { get; set; }
 
         public virtual SanPham? SanPham { get; set; }
+        public virtual KhachHang? User { get; set; }
     }
 }

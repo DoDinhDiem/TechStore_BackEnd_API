@@ -34,7 +34,6 @@ namespace TechStore.Models
         public virtual DbSet<MaGiamGium> MaGiamGia { get; set; } = null!;
         public virtual DbSet<NhaCungCap> NhaCungCaps { get; set; } = null!;
         public virtual DbSet<NhanSu> NhanSus { get; set; } = null!;
-        public virtual DbSet<Role> Roles { get; set; } = null!;
         public virtual DbSet<SanPham> SanPhams { get; set; } = null!;
         public virtual DbSet<Slider> Sliders { get; set; } = null!;
         public virtual DbSet<ThongSo> ThongSos { get; set; } = null!;
@@ -46,7 +45,7 @@ namespace TechStore.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Data Source=DINHDIEMIT;Initial Catalog=TechStore;Integrated Security=True;Trust Server Certificate=True");
+                optionsBuilder.UseSqlServer("Data Source=DINHDIEMIT;Initial Catalog=TechStore;Integrated Security=True;Encrypt=True;Trust Server Certificate=True");
             }
         }
 
@@ -112,6 +111,11 @@ namespace TechStore.Models
                     .WithMany(p => p.BinhLuanSanPhams)
                     .HasForeignKey(d => d.SanPhamId)
                     .HasConstraintName("FK_BinhLuanSanPham_SanPham");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.BinhLuanSanPhams)
+                    .HasForeignKey(d => d.UserId)
+                    .HasConstraintName("FK_BinhLuanSanPham_KhachHang");
             });
 
             modelBuilder.Entity<BinhLuanTinTuc>(entity =>
@@ -176,6 +180,8 @@ namespace TechStore.Models
                 entity.Property(e => e.HoaDonBanId).HasColumnName("HoaDonBan_Id");
 
                 entity.Property(e => e.SanPhamId).HasColumnName("SanPham_Id");
+
+                entity.Property(e => e.TenSanPham).HasMaxLength(255);
 
                 entity.Property(e => e.ThanhTien).HasColumnType("decimal(18, 0)");
 
@@ -459,19 +465,6 @@ namespace TechStore.Models
                     .HasConstraintName("FK_NhanSu_User");
             });
 
-            modelBuilder.Entity<Role>(entity =>
-            {
-                entity.ToTable("Role");
-
-                entity.Property(e => e.CreateDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.TenRole).HasMaxLength(255);
-
-                entity.Property(e => e.UpdateDate).HasColumnType("datetime");
-            });
-
             modelBuilder.Entity<SanPham>(entity =>
             {
                 entity.ToTable("SanPham");
@@ -581,16 +574,11 @@ namespace TechStore.Models
 
                 entity.Property(e => e.PassWord).HasMaxLength(100);
 
-                entity.Property(e => e.RoleId).HasColumnName("Role_Id");
+                entity.Property(e => e.Role).HasMaxLength(255);
 
                 entity.Property(e => e.UpdateDate).HasColumnType("datetime");
 
                 entity.Property(e => e.UserName).HasMaxLength(50);
-
-                entity.HasOne(d => d.Role)
-                    .WithMany(p => p.Users)
-                    .HasForeignKey(d => d.RoleId)
-                    .HasConstraintName("FK_User_Role");
             });
 
             OnModelCreatingPartial(modelBuilder);

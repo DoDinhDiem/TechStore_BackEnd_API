@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
+using TechStore.Dto;
 using TechStore.Helper;
 using TechStore.Models;
 
@@ -108,7 +109,7 @@ namespace TechStore.Controllers
                     UserName = model.UserName,
                     PassWord = PasswordHasher.HashPassword(model.PassWord),
                     Email = model.Email,
-                    RoleId = model.RoleId
+                    Role = model.Role
                 };
 
                 _context.Users.Add(user);
@@ -286,7 +287,7 @@ namespace TechStore.Controllers
                         await file.CopyToAsync(fileStreamClient);
                     }
 
-                    return Ok(new { filePath, filePathClient});
+                    return Ok(new { filePath, filePathClient });
                 }
                 else
                 {

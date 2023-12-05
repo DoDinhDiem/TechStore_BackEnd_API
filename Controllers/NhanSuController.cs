@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using TechStore.Models;
 using TechStore.Helper;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using TechStore.Dto;
 
 namespace TechStore.Controllers
 {
@@ -71,7 +72,7 @@ namespace TechStore.Controllers
                                        gioiTinh = x.GioiTinh,
                                        ngayVaoLam = x.NgayVaoLam,
                                        chucVuId = _context.ChucVus.Where(u => u.Id == x.ChucVuId).Select(u => u.TenChucVu).FirstOrDefault(),
-                                       roleId = u.Role.TenRole,
+                                       role = u.Role,
                                        avartar = x.Avatar,
                                        trangThai = x.TrangThai
                                    }).FirstOrDefaultAsync();
@@ -112,7 +113,7 @@ namespace TechStore.Controllers
                     UserName = model.UserName,
                     PassWord = PasswordHasher.HashPassword(model.PassWord),
                     Email = model.Email,
-                    RoleId = model.RoleId
+                    Role = model.Role
                 };
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
@@ -149,7 +150,7 @@ namespace TechStore.Controllers
 
         [Route("Update_NhanSu")]
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] NhanSuDto  model)
+        public async Task<IActionResult> Update([FromBody] NhanSuDto model)
         {
             try
             {
@@ -177,8 +178,8 @@ namespace TechStore.Controllers
                         System.IO.File.Delete(filePath);
                     }
                 }
-                
-                user.RoleId = model.RoleId;
+
+                user.Role = model.Role;
                 user.UpdateDate = DateTime.Now;
 
                 nhansu.FirstName = model.FirstName;
@@ -258,7 +259,7 @@ namespace TechStore.Controllers
                             ngayVaoLam = ns.NgayVaoLam,
                             chucVuId = _context.ChucVus.Where(chucVu => chucVu.Id == ns.ChucVuId).Select(chucVu => chucVu.TenChucVu).FirstOrDefault(),
                             avartar = ns.Avatar,
-                            roleId = u.Role.TenRole,
+                            role = u.Role,
                             trangThai = ns.TrangThai,
                             createDate = ns.CreateDate
                         });

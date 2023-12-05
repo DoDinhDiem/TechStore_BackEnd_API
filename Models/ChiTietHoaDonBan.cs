@@ -8,7 +8,7 @@ namespace TechStore.Models
         public int Id { get; set; }
         public int? HoaDonBanId { get; set; }
         public int? SanPhamId { get; set; }
-        public int? TenSanPham { get; set; }
+        public string? TenSanPham { get; set; }
         public int? SoLuong { get; set; }
         public decimal? GiaBan { get; set; }
         public decimal? ThanhTien { get; set; }
