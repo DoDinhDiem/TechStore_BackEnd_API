@@ -343,8 +343,6 @@ namespace TechStore.Models
             {
                 entity.ToTable("KhachHang");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
-
                 entity.Property(e => e.Avatar).HasMaxLength(255);
 
                 entity.Property(e => e.CreateDate)

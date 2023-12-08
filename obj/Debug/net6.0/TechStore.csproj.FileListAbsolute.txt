@@ -67,3 +67,5 @@ D:\TechStore\API\TechStore\obj\Debug\net6.0\TechStore.pdb
 D:\TechStore\API\TechStore\obj\Debug\net6.0\TechStore.genruntimeconfig.cache
 D:\TechStore\API\TechStore\obj\Debug\net6.0\ref\TechStore.dll
 D:\TechStore\API\TechStore\obj\Debug\net6.0\TechStore.sourcelink.json
+D:\TechStore\API\TechStore\bin\Debug\net6.0\BCrypt.Net-Next.dll
+D:\TechStore\API\TechStore\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

@@ -24,8 +24,8 @@ namespace TechStore.Controllers
             _appSetting = setting.Value;
         }
 
-        [HttpPost]
         [Route("RegisterClient")]
+        [HttpPost]
         public async Task<IActionResult> Create([FromBody] KhachHangDto model)
         {
             try
@@ -61,13 +61,9 @@ namespace TechStore.Controllers
                     UserId = user.Id,
                     FirstName = model.FirstName,
                     LastName = model.LastName,
-                    Email = model.Email,
+                    Email = user.Email,
                     SoDienThoai = model.SoDienThoai,
-                    DiaChi = model.DiaChi,
-                    NgaySinh = model.NgaySinh,
-                    GioiTinh = model.GioiTinh,
-                    Avatar = model.Avatar,
-                    TrangThai = model.TrangThai
+                    TrangThai = "Đồng"
                 };
                 _context.KhachHangs.Add(khachhang);
                 await _context.SaveChangesAsync();
@@ -84,8 +80,8 @@ namespace TechStore.Controllers
             }
         }
 
-        [HttpPost]
         [Route("Login")]
+        [HttpPost]
         public async Task<IActionResult> Login([FromBody] User user)
         {
             var UserName = user.UserName;
