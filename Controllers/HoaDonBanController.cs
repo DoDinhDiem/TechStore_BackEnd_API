@@ -91,7 +91,7 @@ namespace TechStore.Controllers
         }
 
         [Route("Create_HoaDonBan")]
-        [HttpGet]
+        [HttpPost]
         public async Task<IActionResult> Create([FromBody] HoaDonBan model)
         {
             try
@@ -102,23 +102,23 @@ namespace TechStore.Controllers
 
                 foreach (var cthd in model.ChiTietHoaDonBans)
                 {
-                    var tenSanPham = _context.SanPhams
-                        .Where(x => x.Id == cthd.SanPhamId)
-                        .Select(sp => sp.TenSanPham)
-                        .FirstOrDefault();
-
+                   
                     var ct = new ChiTietHoaDonBan
                     {
-
                         HoaDonBanId = model.Id,
                         SanPhamId = cthd.SanPhamId,
-                        TenSanPham = tenSanPham,
+                        TenSanPham = _context.SanPhams.Where(x => x.Id == cthd.SanPhamId).Select(sp => sp.TenSanPham).FirstOrDefault(),
                         SoLuong = cthd.SoLuong,
                         GiaBan = cthd.GiaBan,
                         ThanhTien = cthd.ThanhTien
                     };
                     newHoaDon.Add(ct);
+
                 }
+                decimal? totalAmount = newHoaDon.Sum(ct => ct.ThanhTien);
+                decimal? giamGia = model.GiamGia ?? 0;
+                model.TongTien = totalAmount - giamGia;
+
                 await _context.SaveChangesAsync();
                 return Ok(new
                 {

@@ -103,6 +103,7 @@ namespace TechStore.Controllers
                 });
             }
 
+
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_appSetting.Secret);
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -111,6 +112,7 @@ namespace TechStore.Controllers
                 {
                     new Claim(ClaimTypes.Name, users.UserName.ToString()),
                     new Claim(ClaimTypes.Role, users.Role),
+                   new Claim("Id", users.Id.ToString()),
                     new Claim(ClaimTypes.DenyOnlyWindowsDeviceGroup, users.PassWord)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
@@ -124,6 +126,67 @@ namespace TechStore.Controllers
                 AccessToken = token
             });
         }
+
+        [Route("LoginAdmin")]
+        [HttpPost]
+        public async Task<IActionResult> LoginAdmin([FromBody] User user)
+        {
+            var UserName = user.UserName;
+            var PassWord = user.PassWord;
+
+            var users = _context.Users
+                                 .Where(x => x.UserName == UserName)
+                                 .Join(
+                                     _context.NhanSus,
+                                     us => us.Id,
+                                     ns => ns.UserId,
+                                     (us, ns) => new 
+                                     { 
+                                         UserName = us.UserName, 
+                                         PassWord = us.PassWord,
+                                         Role = us.Role,
+                                         UserId = ns.Id
+                                     }
+                                 ).SingleOrDefault();
+            if (users == null)
+            {
+                return Ok(new
+                {
+                    message = "Tài khoản không đúng"
+                });
+            }
+            if (!PasswordHasher.VerifyPassword(user.PassWord, users.PassWord))
+            {
+                return Ok(new
+                {
+                    message = "Mật khẩu không đúng"
+                });
+            }
+
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_appSetting.Secret);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.Name, users.UserName.ToString()),
+                    new Claim(ClaimTypes.Role, users.Role),
+                   new Claim("UserId", users.UserId.ToString()),
+                    new Claim(ClaimTypes.DenyOnlyWindowsDeviceGroup, users.PassWord)
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var tmp = tokenHandler.CreateToken(tokenDescriptor);
+            var token = tokenHandler.WriteToken(tmp);
+            var userRole = users.Role;
+            return Ok(new
+            {
+                AccessToken = token
+            });
+        }
+
 
     }
 }
