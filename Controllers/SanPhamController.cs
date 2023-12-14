@@ -31,7 +31,6 @@ namespace TechStore.Controllers
                                    {
                                        id = x.Id,
                                        tenSanPham = x.TenSanPham,
-                                       trangThaiSanPham = x.TrangThaiSanPham,
                                        trangThaiHoatDong = x.TrangThaiHoatDong
                                    }).Where(x => x.trangThaiHoatDong == true).ToListAsync();
                 return Ok(query);

@@ -112,10 +112,10 @@ namespace TechStore.Controllers
                 {
                     new Claim(ClaimTypes.Name, users.UserName.ToString()),
                     new Claim(ClaimTypes.Role, users.Role),
-                   new Claim("Id", users.Id.ToString()),
+                    new Claim("Id", users.Id.ToString()),
                     new Claim(ClaimTypes.DenyOnlyWindowsDeviceGroup, users.PassWord)
                 }),
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddDays(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var tmp = tokenHandler.CreateToken(tokenDescriptor);

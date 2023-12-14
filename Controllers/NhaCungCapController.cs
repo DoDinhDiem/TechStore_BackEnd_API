@@ -25,10 +25,7 @@ namespace TechStore.Controllers
                                    select new
                                    {
                                        id = x.Id,
-                                       tenNhaCungCap = x.TenNhaCungCap,
-                                       email = x.Email,
-                                       soDienThoai = x.SoDienThoai,
-                                       diaChi = x.DiaChi
+                                       tenNhaCungCap = x.TenNhaCungCap
                                    }).ToListAsync();
                 return Ok(query);
             }
