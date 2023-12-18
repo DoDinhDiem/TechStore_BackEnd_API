@@ -221,5 +221,27 @@ namespace TechStore.Controllers
             }
         }
 
+        [Route("GetAll_Slide")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Slider>>> GetAllSlide()
+        {
+            try
+            {
+                var query = await (from x in _context.Sliders
+                                   where x.Status == true
+                                   select new
+                                   {
+                                       id = x.Id,
+                                       anhSlide = x.AnhSlide,
+                                       status = x.Status
+                                   }).ToListAsync();
+                return Ok(query);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

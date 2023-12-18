@@ -299,7 +299,6 @@ namespace TechStore.Controllers
                         await file.CopyToAsync(fileStream);
                     }
 
-
                     return Ok(new { filePath });
                 }
                 else

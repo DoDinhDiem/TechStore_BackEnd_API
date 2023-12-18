@@ -69,7 +69,8 @@ namespace TechStore.Controllers
                                        diaChi = x.DiaChi,
                                        ngaySinh = x.NgaySinh,
                                        gioiTinh = x.GioiTinh,
-                                       avatar = x.Avatar
+                                       avatar = x.Avatar,
+                                       trangThai = x.TrangThai
                                    }).FirstOrDefaultAsync();
                 if (query == null)
                 {
@@ -144,7 +145,7 @@ namespace TechStore.Controllers
         }
 
         [Route("Update_KhachHang")]
-        [HttpPost]
+        [HttpPut]
         public async Task<ActionResult<KhachHang>> Update([FromBody] KhachHang model)
         {
             try
@@ -157,18 +158,18 @@ namespace TechStore.Controllers
                     return NotFound();
                 }
 
-                string fileName = query.Avatar;
-                string filePath = Path.Combine(_path, "custummers", fileName);
-                string filePathClient = Path.Combine(_pathClient, "custummers", fileName);
-
-                if (System.IO.File.Exists(filePath))
+                if (query.Avatar != null)
                 {
-                    System.IO.File.Delete(filePath);
-                    if (System.IO.File.Exists(filePathClient))
+                    string fileName = query.Avatar;
+                    string filePath = Path.Combine(_path, "custummers", fileName);
+                    string filePathClient = Path.Combine(_pathClient, "custummers", fileName);
+
+                    if (System.IO.File.Exists(filePath))
                     {
-                        System.IO.File.Delete(filePathClient);
+                        System.IO.File.Delete(filePath);
                     }
                 }
+               
                 query.FirstName = model.FirstName;
                 query.LastName = model.LastName;
                 query.Email = model.Email;
@@ -280,14 +281,7 @@ namespace TechStore.Controllers
                         await file.CopyToAsync(fileStream);
                     }
 
-                    string filePathClient = $"custumerClient/{file.FileName}";
-                    var fullPathClient = CreatePathFileClient(filePathClient);
-                    using (var fileStreamClient = new FileStream(fullPathClient, FileMode.Create))
-                    {
-                        await file.CopyToAsync(fileStreamClient);
-                    }
-
-                    return Ok(new { filePath, filePathClient });
+                    return Ok(new { filePath });
                 }
                 else
                 {
@@ -318,23 +312,5 @@ namespace TechStore.Controllers
             }
         }
 
-
-        [NonAction]
-        private string CreatePathFileClient(string RelativePathFileName)
-        {
-            try
-            {
-                string serverRootPathFolderClient = _pathClient;
-                string fullPathFileClient = $@"{serverRootPathFolderClient}\{RelativePathFileName}";
-                string fullPathFolderClient = Path.GetDirectoryName(fullPathFileClient);
-                if (!Directory.Exists(fullPathFolderClient))
-                    Directory.CreateDirectory(fullPathFolderClient);
-                return fullPathFileClient;
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-        }
     }
 }

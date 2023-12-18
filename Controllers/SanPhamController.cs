@@ -12,12 +12,10 @@ namespace TechStore.Controllers
     {
         private TechStoreContext _context = new TechStoreContext();
         private string _path;
-        private string _pathClient;
         public SanPhamController(TechStoreContext context, IConfiguration configuration)
         {
             _context = context;
             _path = configuration["AppSettings:UrlImage"];
-            _pathClient = configuration["AppSettings:UrlImageClient"];
         }
 
         [Route("GetAll_SanPham")]
@@ -153,15 +151,10 @@ namespace TechStore.Controllers
                 {
                     string fileName = oldImg.DuongDanAnh;
                     string filePath = Path.Combine(_path, "products", fileName);
-                    string filePathClient = Path.Combine(_pathClient, "productsClient", fileName);
                     // Xóa ảnh trên server
                     if (System.IO.File.Exists(filePath))
                     {
                         System.IO.File.Delete(filePath);
-                        if (System.IO.File.Exists(filePathClient))
-                        {
-                            System.IO.File.Delete(filePathClient);
-                        }
                     }
                 }
 
@@ -254,16 +247,10 @@ namespace TechStore.Controllers
                     // Xóa ảnh trên server
                     string fileName = img.DuongDanAnh; // Giả sử có một trường chứa tên file ảnh
                     string filePath = Path.Combine(_path, "products", fileName);
-                    string filePathClient = Path.Combine(_pathClient, "productsClient", fileName);
 
                     if (System.IO.File.Exists(filePath))
                     {
                         System.IO.File.Delete(filePath);
-
-                        if (System.IO.File.Exists(filePathClient))
-                        {
-                            System.IO.File.Delete(filePathClient);
-                        }
                     }
 
                     _context.AnhSanPhams.Remove(img);
@@ -383,14 +370,6 @@ namespace TechStore.Controllers
                                 await file.CopyToAsync(fileStream);
                             }
                             filePaths.Add(filePath);
-
-                            string filePathClient = $"productsClient/{file.FileName}";
-                            var fullPathClient = CreatePathFileClient(filePathClient);
-                            using (var fileStreamClient = new FileStream(fullPathClient, FileMode.Create))
-                            {
-                                await file.CopyToAsync(fileStreamClient);
-                            }
-                            filePaths.Add(filePathClient);
                         }
                     }
 
@@ -424,23 +403,6 @@ namespace TechStore.Controllers
                 return ex.Message;
             }
         }
-
-        [NonAction]
-        private string CreatePathFileClient(string RelativePathFileName)
-        {
-            try
-            {
-                string serverRootPathFolderClient = _pathClient;
-                string fullPathFileClient = $@"{serverRootPathFolderClient}\{RelativePathFileName}";
-                string fullPathFolderClient = Path.GetDirectoryName(fullPathFileClient);
-                if (!Directory.Exists(fullPathFolderClient))
-                    Directory.CreateDirectory(fullPathFolderClient);
-                return fullPathFileClient;
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-        }
+       
     }
 }

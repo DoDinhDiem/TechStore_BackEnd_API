@@ -132,10 +132,6 @@ namespace TechStore.Controllers
                     if (System.IO.File.Exists(filePath))
                     {
                         System.IO.File.Delete(filePath);
-                        if (System.IO.File.Exists(filePathClient))
-                        {
-                            System.IO.File.Delete(filePathClient);
-                        }
                     }
                 }
                 _context.AnhTinTucs.RemoveRange(oldImages);
@@ -220,11 +216,6 @@ namespace TechStore.Controllers
                         if (System.IO.File.Exists(filePath))
                         {
                             System.IO.File.Delete(filePath);
-
-                            if (System.IO.File.Exists(filePathClient))
-                            {
-                                System.IO.File.Delete(filePathClient);
-                            }
                         }
 
                         _context.AnhTinTucs.Remove(img);
@@ -321,14 +312,6 @@ namespace TechStore.Controllers
                                 await file.CopyToAsync(fileStream);
                             }
                             filePaths.Add(filePath);
-
-                            string filePathClient = $"newsClient/{file.FileName}";
-                            var fullPathClient = CreatePathFileClient(filePathClient);
-                            using (var fileStreamClient = new FileStream(fullPathClient, FileMode.Create))
-                            {
-                                await file.CopyToAsync(fileStreamClient);
-                            }
-                            filePaths.Add(filePathClient);
                         }
                     }
 
@@ -356,24 +339,6 @@ namespace TechStore.Controllers
                 if (!Directory.Exists(fullPathFolder))
                     Directory.CreateDirectory(fullPathFolder);
                 return fullPathFile;
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-        }
-
-        [NonAction]
-        private string CreatePathFileClient(string RelativePathFileName)
-        {
-            try
-            {
-                string serverRootPathFolderClient = _pathClient;
-                string fullPathFileClient = $@"{serverRootPathFolderClient}\{RelativePathFileName}";
-                string fullPathFolderClient = Path.GetDirectoryName(fullPathFileClient);
-                if (!Directory.Exists(fullPathFolderClient))
-                    Directory.CreateDirectory(fullPathFolderClient);
-                return fullPathFileClient;
             }
             catch (Exception ex)
             {

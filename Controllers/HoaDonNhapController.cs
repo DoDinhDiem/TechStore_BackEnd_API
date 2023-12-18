@@ -17,7 +17,7 @@ namespace TechStore.Controllers
 
         [Route("GetAll_HoaDonNhap")]
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<IEnumerable<HoaDonNhap>>> GetAll()
         {
             try
             {
@@ -26,7 +26,7 @@ namespace TechStore.Controllers
                                    {
                                        id = x.Id,
                                        userId = x.UserId,
-                                       nhaCungCap = _context.NhaCungCaps.Where(ncc => ncc.Id == x.NhaCungCapId).Select(ncc => ncc.TenNhaCungCap),
+                                       nhaCungCapId = _context.NhaCungCaps.Where(ncc => ncc.Id == x.NhaCungCapId).Select(ncc => ncc.TenNhaCungCap).FirstOrDefault(),
                                        tongTien = x.TongTien,
                                        trangThaiThanhToans = x.TrangThaiThanhToan
                                    }).ToListAsync();
@@ -49,18 +49,49 @@ namespace TechStore.Controllers
                                    select new
                                    {
                                        id = x.Id,
-                                       userId = x.UserId,
-                                       nhaCungCap =x.NhaCungCapId,
+                                       userId = _context.NhanSus.Where(us => us.Id == x.UserId).Select(us => us.FirstName + " " + us.LastName).FirstOrDefault(),
+                                       nhaCungCapId = _context.NhaCungCaps.Where(ncc => ncc.Id == x.NhaCungCapId).Select(ncc => ncc.TenNhaCungCap).FirstOrDefault(),
                                        tongTien = x.TongTien,
-                                       trangThaiThanhToans = x.TrangThaiThanhToan,
+                                       trangThaiThanhToan = x.TrangThaiThanhToan,
                                        chiTietHoaDon = _context.ChiTietHoaDonNhaps.Where(u => u.HoaDonNhapId == id).Select(s => new
                                        {
-                                           sanPhamId = s.SanPhamId,
+                                           sanPhamId = _context.SanPhams.Where(sp => sp.Id == s.SanPhamId).Select(sp => sp.TenSanPham).FirstOrDefault(),
                                            soLuongNhap = s.SoLuongNhap,
                                            giaNhap = s.GiaNhap,
                                            thanhTien = s.ThanhTien
                                        }).ToList(),
 
+                                   }).FirstOrDefaultAsync();
+                if (query == null)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Không tìm thấy dữ liệu!"
+                    });
+                }
+
+                return Ok(query);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("GetById_HoaDonNhapUD/{id}")]
+        [HttpGet]
+        public async Task<IActionResult> GetByIdUpdate(int id)
+        {
+            try
+            {
+                var query = await (from x in _context.HoaDonNhaps
+                                   where x.Id == id
+                                   select new
+                                   {
+                                       id = x.Id,
+                                       userId = x.UserId,
+                                       nhaCungCapId = x.NhaCungCapId,
+                                       trangThaiThanhToan = x.TrangThaiThanhToan
                                    }).FirstOrDefaultAsync();
                 if (query == null)
                 {
@@ -120,6 +151,38 @@ namespace TechStore.Controllers
                 return Ok(new
                 {
                     message = "Đặt mua sản phẩm thành công!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("Update_HoaDonNhap")]
+        [HttpPut]
+        public async Task<ActionResult<HoaDonNhap>> Update([FromBody] HoaDonNhap model)
+        {
+            try
+            {
+                var query = await (from x in _context.HoaDonNhaps
+                                   where x.Id == model.Id
+                                   select x).FirstOrDefaultAsync();
+                if (query == null)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Không tìm thấy dữ liệu!"
+                    });
+                }
+
+                query.NhaCungCapId = model.NhaCungCapId;
+                query.TrangThaiThanhToan = model.TrangThaiThanhToan;
+
+                await _context.SaveChangesAsync();
+                return Ok(new
+                {
+                    message = "Cập nhập hóa đơn thành công!"
                 });
             }
             catch (Exception ex)

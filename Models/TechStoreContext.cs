@@ -306,6 +306,8 @@ namespace TechStore.Models
 
                 entity.Property(e => e.TongTien).HasColumnType("decimal(18, 0)");
 
+                entity.Property(e => e.TrangThai).HasMaxLength(255);
+
                 entity.Property(e => e.UserId).HasColumnName("User_id");
 
                 entity.HasOne(d => d.User)
@@ -507,8 +509,6 @@ namespace TechStore.Models
             modelBuilder.Entity<Slider>(entity =>
             {
                 entity.ToTable("Slider");
-
-                entity.Property(e => e.TenSlide).HasMaxLength(255);
             });
 
             modelBuilder.Entity<ThongSo>(entity =>

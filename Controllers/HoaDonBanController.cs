@@ -67,7 +67,7 @@ namespace TechStore.Controllers
                                        trangThaiThanhToans = x.TrangThaiThanhToan,
                                        chiTietHoaDon = _context.ChiTietHoaDonBans.Where(u => u.HoaDonBanId == id).Select(s => new
                                        {
-                                           tenSanPham = s.TenSanPham,
+                                           sanPhamId = _context.SanPhams.Where(sp => sp.Id == s.SanPhamId).Select(sp => sp.TenSanPham).FirstOrDefault(),
                                            soLuong = s.SoLuong,
                                            giaBan = s.GiaBan,
                                            thanhTien = s.ThanhTien
@@ -131,6 +131,38 @@ namespace TechStore.Controllers
             }
         }
 
+        [Route("Update_HoaDonBan")]
+        [HttpPut]
+        public async Task<ActionResult<HoaDonBan>> Update([FromBody] HoaDonBan model)
+        {
+            try
+            {
+                var query = await (from x in _context.HoaDonBans
+                                                     where x.Id == model.Id
+                                                     select x).FirstOrDefaultAsync();
+                if (query == null)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Không tìm thấy dữ liệu!"
+                    });
+                }
+
+                query.TrangThaiThanhToan = model.TrangThaiThanhToan;
+                query.TrangThai = model.TrangThai;
+
+                await _context.SaveChangesAsync();
+                return Ok(new
+                {
+                    message = "Cập nhập hóa đơn thành công!"
+                });
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [Route("Search_HoaDonBan")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<HoaDonBan>>> Search()
@@ -147,7 +179,7 @@ namespace TechStore.Controllers
                     trangThai = x.TrangThai,
                     tongTien = x.TongTien,
                     giamGia = x.GiamGia,
-                    trangThaiThanhToans = x.TrangThaiThanhToan,
+                    trangThaiThanhToan = x.TrangThaiThanhToan,
                     createDate = x.CreateDate
                 });
 

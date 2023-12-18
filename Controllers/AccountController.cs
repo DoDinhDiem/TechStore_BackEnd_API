@@ -87,7 +87,20 @@ namespace TechStore.Controllers
             var UserName = user.UserName;
             var PassWord = user.PassWord;
 
-            var users = _context.Users.SingleOrDefault(x => x.UserName == UserName);
+            var users = _context.Users
+                                .Where(x => x.UserName == UserName)
+                                .Join(
+                                    _context.KhachHangs,
+                                    us => us.Id,
+                                    ns => ns.UserId,
+                                    (us, ns) => new
+                                    {
+                                        UserName = us.UserName,
+                                        PassWord = us.PassWord,
+                                        Role = us.Role,
+                                        UserId = ns.Id
+                                    }
+                                ).SingleOrDefault();
             if (users == null)
             {
                 return Ok(new
@@ -112,7 +125,7 @@ namespace TechStore.Controllers
                 {
                     new Claim(ClaimTypes.Name, users.UserName.ToString()),
                     new Claim(ClaimTypes.Role, users.Role),
-                    new Claim("Id", users.Id.ToString()),
+                    new Claim("UserId", users.UserId.ToString()),
                     new Claim(ClaimTypes.DenyOnlyWindowsDeviceGroup, users.PassWord)
                 }),
                 Expires = DateTime.UtcNow.AddDays(1),
@@ -172,7 +185,7 @@ namespace TechStore.Controllers
                 {
                     new Claim(ClaimTypes.Name, users.UserName.ToString()),
                     new Claim(ClaimTypes.Role, users.Role),
-                   new Claim("UserId", users.UserId.ToString()),
+                    new Claim("UserId", users.UserId.ToString()),
                     new Claim(ClaimTypes.DenyOnlyWindowsDeviceGroup, users.PassWord)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
