@@ -64,7 +64,7 @@ namespace TechStore.Controllers
                                        trangThai = x.TrangThai,
                                        tongTien = x.TongTien,
                                        giamGia = x.GiamGia,
-                                       trangThaiThanhToans = x.TrangThaiThanhToan,
+                                       trangThaiThanhToan = x.TrangThaiThanhToan,
                                        chiTietHoaDon = _context.ChiTietHoaDonBans.Where(u => u.HoaDonBanId == id).Select(s => new
                                        {
                                            sanPhamId = _context.SanPhams.Where(sp => sp.Id == s.SanPhamId).Select(sp => sp.TenSanPham).FirstOrDefault(),

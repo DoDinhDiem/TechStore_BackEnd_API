@@ -16,7 +16,7 @@ namespace TechStore.Models
         }
 
         public int Id { get; set; }
-        public string? TenSanPham { get; set; }
+        public string TenSanPham { get; set; }
         public decimal? GiaBan { get; set; }
         public decimal? KhuyenMai { get; set; }
         public int? SoLuongTon { get; set; }

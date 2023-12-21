@@ -174,6 +174,60 @@ namespace TechStore.Controllers
             }
         }
 
+        [Route("LayDienThoai")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<SanPham>>> LayDienThoai()
+        {
+            try
+            {
+                var query = await (from x in _context.SanPhams
+                                   join lsp in _context.Loais on x.LoaiId equals lsp.Id
+                                   where lsp.TenLoai == "Điện thoại"
+                                   where x.TrangThaiHoatDong == true
+                                   orderby x.CreateDate descending
+                                   select new
+                                   {
+                                       id = x.Id,
+                                       tenSanPham = x.TenSanPham,
+                                       giaBan = x.GiaBan,
+                                       khuyenMai = x.KhuyenMai,
+                                       avatar = _context.AnhSanPhams.Where(a => a.SanPhamId == x.Id && a.TrangThai == true).Select(a => a.DuongDanAnh).FirstOrDefault()
+                                   }).Take(10).ToListAsync();
+                return Ok(query);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("LayLapTop")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<SanPham>>> LayLapTop()
+        {
+            try
+            {
+                var query = await (from x in _context.SanPhams
+                                   join lsp in _context.Loais on x.LoaiId equals lsp.Id
+                                   where lsp.TenLoai == "Laptop"
+                                   where x.TrangThaiHoatDong == true
+                                   orderby x.CreateDate descending
+                                   select new
+                                   {
+                                       id = x.Id,
+                                       tenSanPham = x.TenSanPham,
+                                       giaBan = x.GiaBan,
+                                       khuyenMai = x.KhuyenMai,
+                                       avatar = _context.AnhSanPhams.Where(a => a.SanPhamId == x.Id && a.TrangThai == true).Select(a => a.DuongDanAnh).FirstOrDefault()
+                                   }).Take(10).ToListAsync();
+                return Ok(query);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [Route("LoaiSanPham")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Loai>>> GetAll()
@@ -243,5 +297,54 @@ namespace TechStore.Controllers
             }
         }
 
+
+        //Tin Tức
+        [Route("DanhMucTinTuc")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<DanhMucTinTuc>>> GetAllDanhMuc()
+        {
+            try
+            {
+                var query = await (from x in _context.DanhMucTinTucs
+                                   select new
+                                   {
+                                       id = x.Id,
+                                       tenDanhMuc = x.TenDanhMuc,
+                                       trangThai = x.TrangThai
+                                   }).Where(x => x.trangThai == true).ToListAsync();
+                return Ok(query);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("TinTuc/{id}")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<TinTuc>>> GetTinTucById(int id)
+        {
+            try
+            {
+                var query = await (from x in _context.TinTucs
+                                   where x.DanhMucId == id
+                                   select new
+                                   {
+                                       id = x.Id,
+                                       tieuDe = x.TieuDe,
+                                       noiDung = x.NoiDung,
+                                       trangThai = x.TrangThai,
+                                       danhMucId = x.DanhMucId,
+                                       anhDaiDien = _context.AnhTinTucs.Where(a => a.TinTucId == x.Id && a.TrangThai == true).Select(a =>  a.DuongDan ).FirstOrDefault(),
+                                       createDate = x.CreateDate,
+                                       updateDate = x.UpdateDate
+                                   }).ToListAsync();
+                return Ok(query);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
