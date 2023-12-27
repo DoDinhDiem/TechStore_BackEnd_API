@@ -15,7 +15,7 @@ namespace TechStore.Controllers
             _context = context;
         }
 
-        [Route("GetAll_BinhLuanTinTuc")]
+        [Route("GetAll_BinhLuanTinTuc/{id}")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BinhLuanTinTuc>>> GetAll(int id)
         {
@@ -27,7 +27,8 @@ namespace TechStore.Controllers
                                    {
                                        TinTucId = _context.TinTucs.Where(sp => sp.Id == x.TinTucId).Select(sp => sp.TieuDe).FirstOrDefault(),
                                        userId = _context.KhachHangs.Where(us => us.Id == x.UserId).Select(us => us.FirstName + " " + us.LastName).FirstOrDefault(),
-                                       noiDung = x.NoiDung
+                                       noiDung = x.NoiDung,
+                                       createDate = x.CreateDate
                                    }).ToListAsync();
                 return Ok(query);
             }

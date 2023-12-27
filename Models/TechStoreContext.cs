@@ -95,10 +95,6 @@ namespace TechStore.Models
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.Email).HasMaxLength(255);
-
-                entity.Property(e => e.HoTen).HasMaxLength(255);
-
                 entity.Property(e => e.NoiDung).HasColumnType("ntext");
 
                 entity.Property(e => e.SanPhamId).HasColumnName("SanPham_Id");
@@ -125,12 +121,6 @@ namespace TechStore.Models
                 entity.Property(e => e.CreateDate)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.Email)
-                    .HasMaxLength(10)
-                    .IsFixedLength();
-
-                entity.Property(e => e.HoTen).HasMaxLength(255);
 
                 entity.Property(e => e.NoiDung).HasColumnType("ntext");
 

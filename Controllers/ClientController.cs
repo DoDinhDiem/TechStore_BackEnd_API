@@ -10,6 +10,7 @@ namespace TechStore.Controllers
     public class ClientController : ControllerBase
     {
         private TechStoreContext _context;
+        private static HashSet<int> extractedBrandIds = new HashSet<int>();
         public ClientController(TechStoreContext context)
         {
             _context = context;
@@ -120,11 +121,39 @@ namespace TechStore.Controllers
                                        soLuonTon = x.SoLuongTon,
                                        baoHanh = x.BaoHanh,
                                        moTa = x.MoTa,
+                                       loaiId = x.LoaiId,
                                        trangThaiSanPham = x.TrangThaiSanPham,
                                        trangThaiHoatDong = x.TrangThaiHoatDong,
                                        createDate = x.CreateDate,
                                        updateDate = x.UpdateDate
                                    }).Where(x => x.id == id).FirstOrDefaultAsync();
+                return Ok(query);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("SanPhamTuongTu/{id}/{id1}")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<SanPham>>> SanPhamTuongTu(int id, int id1)
+        {
+            try
+            {
+                var query = await (from x in _context.SanPhams
+                                   where x.LoaiId == id
+                                   where x.Id != id1
+                                   where x.TrangThaiHoatDong == true
+                                   orderby x.CreateDate descending
+                                   select new
+                                   {
+                                       id = x.Id,
+                                       tenSanPham = x.TenSanPham,
+                                       giaBan = x.GiaBan,
+                                       khuyenMai = x.KhuyenMai,
+                                       avatar = _context.AnhSanPhams.Where(a => a.SanPhamId == x.Id && a.TrangThai == true).Select(a => a.DuongDanAnh).FirstOrDefault()
+                                   }).Take(10).ToListAsync();
                 return Ok(query);
             }
             catch (Exception ex)
@@ -173,6 +202,49 @@ namespace TechStore.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [Route("LayHangSanPham/{id}")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<SanPham>>> GetAllHang(int id)
+        {
+            try
+            {
+                extractedBrandIds.Clear();
+
+                var query = await (from x in _context.SanPhams
+                                   where x.LoaiId == id
+                                   where x.TrangThaiHoatDong == true
+                                   select new
+                                   {
+                                       hangId = x.HangSanXuatId,
+                                       tenHang = _context.HangSanXuats
+                                           .Where(hsp => hsp.Id == x.HangSanXuatId)
+                                           .Select(hsp => hsp.TenHang)
+                                           .FirstOrDefault()
+                                   }).ToListAsync();
+
+                List<dynamic> uniqueBrands = new List<dynamic>();
+
+                foreach (var item in query)
+                {
+                    // Kiểm tra xem hãng đã được lấy chưa
+                    if (!extractedBrandIds.Contains(item.hangId))
+                    {
+                        uniqueBrands.Add(new { Id = item.hangId, TenHang = item.tenHang });
+                        extractedBrandIds.Add(item.hangId);
+                    }
+                }
+
+                uniqueBrands = uniqueBrands.OrderBy(x => x.Id).ToList();
+
+                return Ok(uniqueBrands);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
         [Route("LayDienThoai")]
         [HttpGet]
@@ -335,13 +407,40 @@ namespace TechStore.Controllers
                                        noiDung = x.NoiDung,
                                        trangThai = x.TrangThai,
                                        danhMucId = x.DanhMucId,
-                                       anhDaiDien = _context.AnhTinTucs.Where(a => a.TinTucId == x.Id && a.TrangThai == true).Select(a =>  a.DuongDan ).FirstOrDefault(),
+                                       anhDaiDien = _context.AnhTinTucs.Where(a => a.TinTucId == x.Id && a.TrangThai == true).Select(a => a.DuongDan).FirstOrDefault(),
                                        createDate = x.CreateDate,
                                        updateDate = x.UpdateDate
                                    }).ToListAsync();
                 return Ok(query);
             }
-            catch(Exception ex)
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("ChiTietTinTuc/{id}")]
+        [HttpGet]
+        public async Task<ActionResult<TinTuc>> GetByIdTinTuc(int id)
+        {
+            try
+            {
+                var query = await (from x in _context.TinTucs
+
+                                   select new
+                                   {
+                                       id = x.Id,
+                                       tieuDe = x.TieuDe,
+                                       noiDung = x.NoiDung,
+                                       trangThai = x.TrangThai,
+                                       danhMucId = x.DanhMucId,
+                                       anhDaiDien = _context.AnhTinTucs.Where(a => a.TinTucId == x.Id && a.TrangThai == true).Select(a => a.DuongDan).FirstOrDefault(),
+                                       createDate = x.CreateDate,
+                                       updateDate = x.UpdateDate
+                                   }).Where(x => x.id == id).FirstOrDefaultAsync();
+                return Ok(query);
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }

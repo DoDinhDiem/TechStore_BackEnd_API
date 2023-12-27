@@ -15,7 +15,7 @@ namespace TechStore.Controllers
             _context = context;
         }
 
-        [Route("GetAll_BinhLuanSanPham")]
+        [Route("GetAll_BinhLuanSanPham/{id}")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BinhLuanSanPham>>> GetAll(int id)
         {
@@ -27,7 +27,8 @@ namespace TechStore.Controllers
                                    {
                                        sanPhamId = _context.SanPhams.Where(sp => sp.Id == x.SanPhamId).Select(sp => sp.TenSanPham).FirstOrDefault(),
                                        userId = _context.KhachHangs.Where(us => us.Id == x.UserId).Select(us => us.FirstName + " " + us.LastName).FirstOrDefault(),
-                                       noiDung = x.NoiDung
+                                       noiDung = x.NoiDung,
+                                       createDate = x.CreateDate
                                    }).ToListAsync();
                 return Ok(query);
             }
@@ -117,7 +118,7 @@ namespace TechStore.Controllers
             }
         }
 
-        [Route("Delete_BinhLuanSanPham")]
+        [Route("Delete_BinhLuanSanPham/{id}/{userId}")]
         [HttpPut]
         public async Task<ActionResult<BinhLuanSanPham>> Delete(int id, int userId)
         {

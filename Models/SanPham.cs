@@ -23,7 +23,7 @@ namespace TechStore.Models
         public string? BaoHanh { get; set; }
         public string? MoTa { get; set; }
         public int? LoaiId { get; set; }
-        public int? HangSanXuatId { get; set; }
+        public int HangSanXuatId { get; set; }
         public DateTime? CreateDate { get; set; }
         public DateTime? UpdateDate { get; set; }
         public string? TrangThaiSanPham { get; set; }
