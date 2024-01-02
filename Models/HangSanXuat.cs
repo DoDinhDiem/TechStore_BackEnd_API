@@ -15,7 +15,6 @@ namespace TechStore.Models
         public bool? TrangThai { get; set; }
         public DateTime? CreateDate { get; set; }
         public DateTime? UpdateDate { get; set; }
-        public int? SapXep { get; set; }
 
         public virtual ICollection<SanPham> SanPhams { get; set; }
     }

@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechStore.Models;
 
 namespace TechStore.Controllers
 {
+    [Authorize(Roles = "Admin,Nhân viên")]
     [Route("api/[controller]")]
     [ApiController]
     public class HoaDonBanController : ControllerBase
@@ -90,6 +92,7 @@ namespace TechStore.Controllers
             }
         }
 
+        [AllowAnonymous]
         [Route("Create_HoaDonBan")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] HoaDonBan model)
@@ -183,6 +186,7 @@ namespace TechStore.Controllers
                     createDate = x.CreateDate
                 });
 
+            query = query.OrderByDescending(dc => dc.createDate);
             var result = await query.ToListAsync();
             return Ok(result);
         }

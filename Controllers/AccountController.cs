@@ -199,7 +199,5 @@ namespace TechStore.Controllers
                 AccessToken = token
             });
         }
-
-
     }
 }

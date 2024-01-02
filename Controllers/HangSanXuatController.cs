@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -6,6 +7,7 @@ using TechStore.Models;
 
 namespace TechStore.Controllers
 {
+    [Authorize(Roles = "Admin,Nhân viên")]
     [Route("api/[controller]")]
     [ApiController]
     public class HangSanXuatController : ControllerBase
@@ -65,12 +67,20 @@ namespace TechStore.Controllers
         [HttpPost]
         public async Task<ActionResult<HangSanXuat>> Create([FromBody] HangSanXuat model)
         {
-            _context.HangSanXuats.Add(model);
-            await _context.SaveChangesAsync();
-            return Ok(new
+            try
             {
-                message = "Thêm hãng sản xuất thành công!"
-            });
+                _context.HangSanXuats.Add(model);
+                await _context.SaveChangesAsync();
+                return Ok(new
+                {
+                    message = "Thêm hãng sản xuất thành công!"
+                });
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+           
         }
 
         [Route("Update_Hang")]

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -6,6 +7,7 @@ using TechStore.Models;
 
 namespace TechStore.Controllers
 {
+    [Authorize(Roles = "Admin,Nhân viên")]
     [Route("api/[controller]")]
     [ApiController]
     public class SanPhamController : ControllerBase
@@ -123,42 +125,32 @@ namespace TechStore.Controllers
 
         [Route("Update_SanPham")]
         [HttpPut]
-        public async Task<ActionResult<string>> UpdateSanPham([FromBody] SanPham model)
+        public async Task<IActionResult> UpdateSanPham([FromBody] SanPham model)
         {
             try
             {
                 var query = await (from sanPham in _context.SanPhams
                                    where sanPham.Id == model.Id
-                                   select sanPham).FirstOrDefaultAsync(); ;
+                                   select sanPham).FirstOrDefaultAsync();
                 if (query == null)
                 {
                     return NotFound();
                 }
-                query.TenSanPham = model.TenSanPham;
-                query.GiaBan = model.GiaBan;
-                query.KhuyenMai = model.KhuyenMai;
-                query.SoLuongTon = model.SoLuongTon;
-                query.BaoHanh = model.BaoHanh;
-                query.MoTa = model.MoTa;
-                query.LoaiId = model.LoaiId;
-                query.HangSanXuatId = model.HangSanXuatId;
-                query.TrangThaiSanPham = model.TrangThaiSanPham;
-                query.TrangThaiHoatDong = model.TrangThaiHoatDong;
-                query.UpdateDate = DateTime.Now;
-                var oldImages = _context.AnhSanPhams.Where(img => img.SanPhamId == model.Id).ToList();
-                _context.AnhSanPhams.RemoveRange(oldImages);
-                foreach (var oldImg in oldImages)
-                {
-                    string fileName = oldImg.DuongDanAnh;
-                    string filePath = Path.Combine(_path, "products", fileName);
-                    // Xóa ảnh trên server
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-                }
 
-                // Sau khi xóa ảnh, thêm ảnh mới vào trong cơ sở dữ liệu
+                var oldImages = _context.AnhSanPhams.Where(img => img.SanPhamId == model.Id).ToList();
+                //foreach (var oldImg in oldImages)
+                //{
+                //    string fileName = oldImg.DuongDanAnh;
+                //    string filePath = Path.Combine(_path, "products", fileName);
+
+
+                //    if (System.IO.File.Exists(filePath))
+                //    {
+                //        System.IO.File.Delete(filePath);
+                //    }
+                //}
+                _context.AnhSanPhams.RemoveRange(oldImages);
+            
                 foreach (var productImg in model.AnhSanPhams)
                 {
                     var img = new AnhSanPham
@@ -170,7 +162,18 @@ namespace TechStore.Controllers
                     _context.AnhSanPhams.Add(img);
                 }
 
+                query.TenSanPham = model.TenSanPham;
+                query.GiaBan = model.GiaBan;
+                query.KhuyenMai = model.KhuyenMai;
+                query.BaoHanh = model.BaoHanh;
+                query.MoTa = model.MoTa;
+                query.LoaiId = model.LoaiId;
+                query.HangSanXuatId = model.HangSanXuatId;
+                query.TrangThaiSanPham = model.TrangThaiSanPham;
+                query.TrangThaiHoatDong = model.TrangThaiHoatDong;
+                query.UpdateDate = DateTime.Now;
 
+                // Xóa thông số cũ và thêm thông số mới
                 _context.ThongSos.RemoveRange(_context.ThongSos.Where(t => t.SanPhamId == model.Id));
                 foreach (var thongSo in model.ThongSos)
                 {
@@ -181,7 +184,6 @@ namespace TechStore.Controllers
                         MoTa = thongSo.MoTa,
                         TrangThai = true,
                         UpdateDate = DateTime.Now,
-
                     };
                     _context.ThongSos.Add(newThongSo);
                 }
@@ -197,6 +199,7 @@ namespace TechStore.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
 
         [Route("Update_SanPham_TrangThaiHoatDong/{id}")]
         [HttpPut]
@@ -377,14 +380,15 @@ namespace TechStore.Controllers
                 }
                 else
                 {
-                    return BadRequest("No files were uploaded.");
+                    return BadRequest("Không có file nào được tải lên.");
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal Server Error");
+                return StatusCode(500, "Lỗi Nội Server");
             }
         }
+
 
         [NonAction]
         private string CreatePathFile(string RelativePathFileName)

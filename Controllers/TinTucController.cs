@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -6,6 +7,7 @@ using TechStore.Models;
 
 namespace TechStore.Controllers
 {
+    [Authorize(Roles = "Admin,Nhân viên")]
     [Route("api/[controller]")]
     [ApiController]
     public class TinTucController : ControllerBase
@@ -123,17 +125,6 @@ namespace TechStore.Controllers
                 query.DanhMucId = model.DanhMucId;
                 query.UpdateDate = DateTime.Now;
                 var oldImages = _context.AnhTinTucs.Where(img => img.TinTucId == model.Id).ToList();
-                foreach (var oldImg in oldImages)
-                {
-                    string fileName = oldImg.DuongDan;
-                    string filePath = Path.Combine(_path, "news", fileName);
-                    string filePathClient = Path.Combine(_pathClient, "newsClient", fileName);
-                    // Xóa ảnh trên server
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-                }
                 _context.AnhTinTucs.RemoveRange(oldImages);
 
                 // Sau khi xóa ảnh, thêm ảnh mới vào trong cơ sở dữ liệu

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechStore.Models;
@@ -122,6 +123,7 @@ namespace TechStore.Controllers
                                        baoHanh = x.BaoHanh,
                                        moTa = x.MoTa,
                                        loaiId = x.LoaiId,
+                                       avatar = _context.AnhSanPhams.Where(a => a.SanPhamId == x.Id && a.TrangThai == true).Select(a => a.DuongDanAnh).FirstOrDefault(),
                                        trangThaiSanPham = x.TrangThaiSanPham,
                                        trangThaiHoatDong = x.TrangThaiHoatDong,
                                        createDate = x.CreateDate,
@@ -438,6 +440,136 @@ namespace TechStore.Controllers
                                        createDate = x.CreateDate,
                                        updateDate = x.UpdateDate
                                    }).Where(x => x.id == id).FirstOrDefaultAsync();
+                return Ok(query);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("TinTucCongNghe")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<TinTuc>>> TinTucCongNghe()
+        {
+            try
+            {
+                var query = await (from x in _context.TinTucs
+                                   join lsp in _context.DanhMucTinTucs on x.DanhMucId equals lsp.Id
+                                   where lsp.TenDanhMuc == "Tin công nghệ"
+                                   where x.TrangThai == true
+                                   orderby x.CreateDate descending
+                                   select new
+                                   {
+                                       id = x.Id,
+                                       tieuDe = x.TieuDe,
+                                       anhDaiDien = _context.AnhTinTucs.Where(a => a.TinTucId == x.Id && a.TrangThai == true).Select(a => a.DuongDan).FirstOrDefault()
+                                   }).Take(3).ToListAsync();
+                return Ok(query);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [Route("KhamPha")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<TinTuc>>> KhamPha()
+        {
+            try
+            {
+                var query = await (from x in _context.TinTucs
+                                   join lsp in _context.DanhMucTinTucs on x.DanhMucId equals lsp.Id
+                                   where lsp.TenDanhMuc == "Khám phá"
+                                   where x.TrangThai == true
+                                   orderby x.CreateDate descending
+                                   select new
+                                   {
+                                       id = x.Id,
+                                       tieuDe = x.TieuDe,
+                                       anhDaiDien = _context.AnhTinTucs.Where(a => a.TinTucId == x.Id && a.TrangThai == true).Select(a => a.DuongDan).FirstOrDefault()
+                                   }).Take(3).ToListAsync();
+                return Ok(query);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("TGames")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<TinTuc>>> TGames()
+        {
+            try
+            {
+                var query = await (from x in _context.TinTucs
+                                   join lsp in _context.DanhMucTinTucs on x.DanhMucId equals lsp.Id
+                                   where lsp.TenDanhMuc == "T-Games"
+                                   where x.TrangThai == true
+                                   orderby x.CreateDate descending
+                                   select new
+                                   {
+                                       id = x.Id,
+                                       tieuDe = x.TieuDe,
+                                       anhDaiDien = _context.AnhTinTucs.Where(a => a.TinTucId == x.Id && a.TrangThai == true).Select(a => a.DuongDan).FirstOrDefault()
+                                   }).Take(3).ToListAsync();
+                return Ok(query);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("LayTenLoai/{id}")]
+        [HttpGet]
+        public async Task<ActionResult<Loai>> GetNameLoai(int id)
+        {
+            try
+            {
+                var query = await (from x in _context.Loais
+                                   where  x.Id == id
+                                   select new
+                                   {
+                                       name = x.TenLoai
+                                   }).FirstOrDefaultAsync();
+                if(query == null)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Không tìm thấy dữ liệu!"
+                    });
+                }
+                return Ok(query);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("LayTenTinTuc/{id}")]
+        [HttpGet]
+        public async Task<ActionResult<DanhMucTinTuc>> GetNameTinTuc(int id)
+        {
+            try
+            {
+                var query = await (from x in _context.DanhMucTinTucs
+                                   where x.Id == id
+                                   select new
+                                   {
+                                       name = x.TenDanhMuc
+                                   }).FirstOrDefaultAsync();
+                if (query == null)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Không tìm thấy dữ liệu!"
+                    });
+                }
                 return Ok(query);
             }
             catch (Exception ex)

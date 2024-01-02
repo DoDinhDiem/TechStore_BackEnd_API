@@ -8,7 +8,6 @@ namespace TechStore.Models
         public KhachHang()
         {
             BinhLuanSanPhams = new HashSet<BinhLuanSanPham>();
-            Carts = new HashSet<Cart>();
             FeedBacks = new HashSet<FeedBack>();
             HoaDonBans = new HashSet<HoaDonBan>();
         }
@@ -27,9 +26,7 @@ namespace TechStore.Models
         public string? Avatar { get; set; }
         public string? TrangThai { get; set; }
 
-        public virtual User? User { get; set; }
         public virtual ICollection<BinhLuanSanPham> BinhLuanSanPhams { get; set; }
-        public virtual ICollection<Cart> Carts { get; set; }
         public virtual ICollection<FeedBack> FeedBacks { get; set; }
         public virtual ICollection<HoaDonBan> HoaDonBans { get; set; }
     }

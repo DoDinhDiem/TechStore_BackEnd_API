@@ -11,7 +11,7 @@ namespace TechStore.Models
         }
 
         public int Id { get; set; }
-        public int NhaCungCapId { get; set; }
+        public int? NhaCungCapId { get; set; }
         public bool? TrangThaiThanhToan { get; set; }
         public decimal? TongTien { get; set; }
         public DateTime? CreateDate { get; set; }

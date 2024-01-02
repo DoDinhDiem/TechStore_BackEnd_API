@@ -6,9 +6,11 @@ using TechStore.Models;
 using TechStore.Helper;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using TechStore.Dto;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TechStore.Controllers
 {
+    [Authorize(Roles = "Admin,Nhân viên")]
     [Route("api/[controller]")]
     [ApiController]
     public class NhanSuController : ControllerBase
@@ -167,17 +169,17 @@ namespace TechStore.Controllers
                     return NotFound();
                 }
 
-                if (nhansu.Avatar != null)
-                {
-                    string fileName = nhansu.Avatar;
-                    string filePath = Path.Combine(_path, "personnel", fileName);
+                //if(nhansu.Avatar != null )
+                //{
+                //    string fileName = nhansu.Avatar;
+                //    string filePath = Path.Combine(_path, "personnel", fileName);
 
-                    // Xóa ảnh trên server
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-                }
+                //    // Xóa ảnh trên server
+                //    if (System.IO.File.Exists(filePath))
+                //    {
+                //        System.IO.File.Delete(filePath);
+                //    }
+                //}
 
                 user.Role = model.Role;
                 user.UpdateDate = DateTime.Now;
@@ -186,9 +188,9 @@ namespace TechStore.Controllers
                 nhansu.LastName = model.LastName;
                 nhansu.SoDienThoai = model.SoDienThoai;
                 nhansu.DiaChi = model.DiaChi;
-                nhansu.NgaySinh = DateTime.UtcNow; ;
+                nhansu.NgaySinh = model.NgaySinh.Value.Kind == DateTimeKind.Utc? model.NgaySinh.Value.ToLocalTime(): model.NgaySinh.Value;
                 nhansu.GioiTinh = model.GioiTinh;
-                nhansu.NgayVaoLam = DateTime.UtcNow; ;
+                nhansu.NgayVaoLam = model.NgayVaoLam.Value.Kind == DateTimeKind.Utc ? model.NgayVaoLam.Value.ToLocalTime() : model.NgayVaoLam.Value;
                 nhansu.Avatar = model.Avatar;
                 nhansu.TrangThai = model.TrangThai;
                 nhansu.ChucVuId = model.ChucVuId;
@@ -258,7 +260,7 @@ namespace TechStore.Controllers
                             gioiTinh = ns.GioiTinh,
                             ngayVaoLam = ns.NgayVaoLam,
                             chucVuId = _context.ChucVus.Where(chucVu => chucVu.Id == ns.ChucVuId).Select(chucVu => chucVu.TenChucVu).FirstOrDefault(),
-                            avartar = ns.Avatar,
+                            avatar = ns.Avatar,
                             role = u.Role,
                             trangThai = ns.TrangThai,
                             createDate = ns.CreateDate

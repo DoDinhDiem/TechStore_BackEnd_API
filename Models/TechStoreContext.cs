@@ -20,7 +20,6 @@ namespace TechStore.Models
         public virtual DbSet<AnhTinTuc> AnhTinTucs { get; set; } = null!;
         public virtual DbSet<BinhLuanSanPham> BinhLuanSanPhams { get; set; } = null!;
         public virtual DbSet<BinhLuanTinTuc> BinhLuanTinTucs { get; set; } = null!;
-        public virtual DbSet<Cart> Carts { get; set; } = null!;
         public virtual DbSet<ChiTietHoaDonBan> ChiTietHoaDonBans { get; set; } = null!;
         public virtual DbSet<ChiTietHoaDonNhap> ChiTietHoaDonNhaps { get; set; } = null!;
         public virtual DbSet<ChucVu> ChucVus { get; set; } = null!;
@@ -45,7 +44,7 @@ namespace TechStore.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Data Source=DINHDIEMIT;Initial Catalog=TechStore;Integrated Security=True;Encrypt=True;Trust Server Certificate=True");
+                optionsBuilder.UseSqlServer("Data Source=DINHDIEMIT;Initial Catalog=TechStore;Integrated Security=True;Trust Server Certificate=True");
             }
         }
 
@@ -66,6 +65,7 @@ namespace TechStore.Models
                 entity.HasOne(d => d.SanPham)
                     .WithMany(p => p.AnhSanPhams)
                     .HasForeignKey(d => d.SanPhamId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_AnhSanPham_SanPham");
             });
 
@@ -84,6 +84,7 @@ namespace TechStore.Models
                 entity.HasOne(d => d.TinTuc)
                     .WithMany(p => p.AnhTinTucs)
                     .HasForeignKey(d => d.TinTucId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_AnhTinTuc_TinTuc");
             });
 
@@ -106,11 +107,13 @@ namespace TechStore.Models
                 entity.HasOne(d => d.SanPham)
                     .WithMany(p => p.BinhLuanSanPhams)
                     .HasForeignKey(d => d.SanPhamId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_BinhLuanSanPham_SanPham");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.BinhLuanSanPhams)
                     .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_BinhLuanSanPham_KhachHang");
             });
 
@@ -133,32 +136,8 @@ namespace TechStore.Models
                 entity.HasOne(d => d.TinTuc)
                     .WithMany(p => p.BinhLuanTinTucs)
                     .HasForeignKey(d => d.TinTucId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_BinhLuanTinTuc_TinTuc");
-            });
-
-            modelBuilder.Entity<Cart>(entity =>
-            {
-                entity.ToTable("Cart");
-
-                entity.Property(e => e.AnhSanPham).HasMaxLength(255);
-
-                entity.Property(e => e.GiaBan).HasColumnType("decimal(18, 0)");
-
-                entity.Property(e => e.KhachHangId).HasColumnName("KhachHang_Id");
-
-                entity.Property(e => e.SanPhamId).HasColumnName("SanPham_Id");
-
-                entity.Property(e => e.TenSanPham).HasMaxLength(255);
-
-                entity.HasOne(d => d.KhachHang)
-                    .WithMany(p => p.Carts)
-                    .HasForeignKey(d => d.KhachHangId)
-                    .HasConstraintName("FK_Cart_KhachHang");
-
-                entity.HasOne(d => d.SanPham)
-                    .WithMany(p => p.Carts)
-                    .HasForeignKey(d => d.SanPhamId)
-                    .HasConstraintName("FK_Cart_SanPham");
             });
 
             modelBuilder.Entity<ChiTietHoaDonBan>(entity =>
@@ -178,11 +157,13 @@ namespace TechStore.Models
                 entity.HasOne(d => d.HoaDonBan)
                     .WithMany(p => p.ChiTietHoaDonBans)
                     .HasForeignKey(d => d.HoaDonBanId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_ChiTietHoaDonBan_HoaDonBan");
 
                 entity.HasOne(d => d.SanPham)
                     .WithMany(p => p.ChiTietHoaDonBans)
                     .HasForeignKey(d => d.SanPhamId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_ChiTietHoaDonBan_SanPham");
             });
 
@@ -201,11 +182,13 @@ namespace TechStore.Models
                 entity.HasOne(d => d.HoaDonNhap)
                     .WithMany(p => p.ChiTietHoaDonNhaps)
                     .HasForeignKey(d => d.HoaDonNhapId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_ChiTietHoaDonNhap_HoaDonNhap");
 
                 entity.HasOne(d => d.SanPham)
                     .WithMany(p => p.ChiTietHoaDonNhaps)
                     .HasForeignKey(d => d.SanPhamId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_ChiTietHoaDonNhap_SanPham");
             });
 
@@ -258,6 +241,7 @@ namespace TechStore.Models
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.FeedBacks)
                     .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_FeedBack_KhachHang");
             });
 
@@ -303,6 +287,7 @@ namespace TechStore.Models
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.HoaDonBans)
                     .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_HoaDonBan_KhachHang");
             });
 
@@ -323,11 +308,13 @@ namespace TechStore.Models
                 entity.HasOne(d => d.NhaCungCap)
                     .WithMany(p => p.HoaDonNhaps)
                     .HasForeignKey(d => d.NhaCungCapId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_HoaDonNhap_NhaCungCap");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.HoaDonNhaps)
                     .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_HoaDonNhap_NhanSu");
             });
 
@@ -358,11 +345,6 @@ namespace TechStore.Models
                 entity.Property(e => e.UpdateDate).HasColumnType("datetime");
 
                 entity.Property(e => e.UserId).HasColumnName("User_Id");
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.KhachHangs)
-                    .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_KhachHang_User");
             });
 
             modelBuilder.Entity<Loai>(entity =>
@@ -424,9 +406,7 @@ namespace TechStore.Models
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.Email)
-                    .HasMaxLength(255)
-                    .HasComment("");
+                entity.Property(e => e.Email).HasMaxLength(255);
 
                 entity.Property(e => e.FirstName).HasMaxLength(255);
 
@@ -447,11 +427,13 @@ namespace TechStore.Models
                 entity.HasOne(d => d.ChucVu)
                     .WithMany(p => p.NhanSus)
                     .HasForeignKey(d => d.ChucVuId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_NhanSu_ChucVu");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.NhanSus)
                     .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_NhanSu_User");
             });
 
@@ -488,11 +470,13 @@ namespace TechStore.Models
                 entity.HasOne(d => d.HangSanXuat)
                     .WithMany(p => p.SanPhams)
                     .HasForeignKey(d => d.HangSanXuatId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_SanPham_HangSanXuat");
 
                 entity.HasOne(d => d.Loai)
                     .WithMany(p => p.SanPhams)
                     .HasForeignKey(d => d.LoaiId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_SanPham_Loai");
             });
 
@@ -520,6 +504,7 @@ namespace TechStore.Models
                 entity.HasOne(d => d.SanPham)
                     .WithMany(p => p.ThongSos)
                     .HasForeignKey(d => d.SanPhamId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_ThongSo_SanPham1");
             });
 
@@ -542,11 +527,13 @@ namespace TechStore.Models
                 entity.HasOne(d => d.DanhMuc)
                     .WithMany(p => p.TinTucs)
                     .HasForeignKey(d => d.DanhMucId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_TinTuc_DanhMucTinTuc");
 
                 entity.HasOne(d => d.NguoiVietNavigation)
                     .WithMany(p => p.TinTucs)
                     .HasForeignKey(d => d.NguoiViet)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_TinTuc_NhanSu");
             });
 

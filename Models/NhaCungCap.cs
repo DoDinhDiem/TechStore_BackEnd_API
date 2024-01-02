@@ -17,6 +17,7 @@ namespace TechStore.Models
         public string? DiaChi { get; set; }
         public DateTime? CreateDate { get; set; }
         public DateTime? UpdateDate { get; set; }
+        public bool? TrangThai { get; set; }
 
         public virtual ICollection<HoaDonNhap> HoaDonNhaps { get; set; }
     }

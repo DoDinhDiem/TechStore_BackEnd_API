@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -9,18 +10,17 @@ using TechStore.Models;
 
 namespace TechStore.Controllers
 {
+    [Authorize(Roles = "Admin, Nhân viên")]
     [Route("api/[controller]")]
     [ApiController]
     public class KhachHangController : ControllerBase
     {
         private TechStoreContext _context;
         private string _path;
-        private string _pathClient;
         public KhachHangController(TechStoreContext context, IConfiguration configuration)
         {
             _context = context;
             _path = configuration["AppSettings:UrlImage"];
-            _pathClient = configuration["AppSettings:UrlImageClient"];
         }
 
         [Route("GetAll_KhachHang")]
@@ -51,6 +51,8 @@ namespace TechStore.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [AllowAnonymous]
         [Route("GetById_KhachHang/{id}")]
         [HttpGet]
         public async Task<ActionResult<KhachHang>> GetById(int id)
@@ -84,6 +86,7 @@ namespace TechStore.Controllers
             }
         }
 
+        [AllowAnonymous]
         [Route("Create_KhachHang")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] KhachHangDto model)
@@ -144,6 +147,7 @@ namespace TechStore.Controllers
             }
         }
 
+        [AllowAnonymous]
         [Route("Update_KhachHang")]
         [HttpPut]
         public async Task<ActionResult<KhachHang>> Update([FromBody] KhachHang model)
@@ -158,17 +162,17 @@ namespace TechStore.Controllers
                     return NotFound();
                 }
 
-                if (query.Avatar != null)
-                {
-                    string fileName = query.Avatar;
-                    string filePath = Path.Combine(_path, "custummers", fileName);
-                    string filePathClient = Path.Combine(_pathClient, "custummers", fileName);
+                //if (query.Avatar != null)
+                //{
+                //    string fileName = query.Avatar;
+                //    string filePath = Path.Combine(_path, "custummers", fileName);
+                //    string filePathClient = Path.Combine(_pathClient, "custummers", fileName);
 
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-                }
+                //    if (System.IO.File.Exists(filePath))
+                //    {
+                //        System.IO.File.Delete(filePath);
+                //    }
+                //}
                
                 query.FirstName = model.FirstName;
                 query.LastName = model.LastName;
@@ -221,7 +225,7 @@ namespace TechStore.Controllers
         //    }
         //}
 
-
+        
         [Route("Search_KhachHang")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<KhachHang>>> Search(

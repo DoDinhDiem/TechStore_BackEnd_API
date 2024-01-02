@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechStore.Models;
 
 namespace TechStore.Controllers
 {
+    [Authorize(Roles = "Admin,Nhân viên")]
     [Route("api/[controller]")]
     [ApiController]
     public class AnhSanPhamController : ControllerBase
@@ -108,20 +110,14 @@ namespace TechStore.Controllers
                     return NotFound();
                 }
 
-                string fileName = query.DuongDanAnh;
-                string filePath = Path.Combine(_path, "products", fileName);
-                string filePathClient = Path.Combine(_pathClient, "productsClient", fileName);
+                //string fileName = query.DuongDanAnh;
+                //string filePath = Path.Combine(_path, "products", fileName);
 
-                // Xóa ảnh trên server
-                if (System.IO.File.Exists(filePath))
-                {
-                    System.IO.File.Delete(filePath);
-
-                    if (System.IO.File.Exists(filePathClient))
-                    {
-                        System.IO.File.Delete(filePathClient);
-                    }
-                }
+                //// Xóa ảnh trên server
+                //if (System.IO.File.Exists(filePath))
+                //{
+                //    System.IO.File.Delete(filePath);
+                //}
 
                 query.DuongDanAnh = anh.DuongDanAnh;
                 query.UpdateDate = DateTime.Now;
@@ -188,16 +184,11 @@ namespace TechStore.Controllers
                 }
                 string fileName = query.DuongDanAnh;
                 string filePath = Path.Combine(_path, "products", fileName);
-                string filePathClient = Path.Combine(_pathClient, "productsClient", fileName);
 
                 // Xóa ảnh trên server
                 if (System.IO.File.Exists(filePath))
                 {
                     System.IO.File.Delete(filePath);
-                    if (System.IO.File.Exists(filePathClient))
-                    {
-                        System.IO.File.Delete(filePathClient);
-                    }
                 }
                 var sanPhamId = query.SanPhamId;
                 _context.Remove(query);

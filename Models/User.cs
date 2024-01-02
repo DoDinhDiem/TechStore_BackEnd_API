@@ -7,7 +7,6 @@ namespace TechStore.Models
     {
         public User()
         {
-            KhachHangs = new HashSet<KhachHang>();
             NhanSus = new HashSet<NhanSu>();
         }
 
@@ -19,7 +18,6 @@ namespace TechStore.Models
         public DateTime? CreateDate { get; set; }
         public DateTime? UpdateDate { get; set; }
 
-        public virtual ICollection<KhachHang> KhachHangs { get; set; }
         public virtual ICollection<NhanSu> NhanSus { get; set; }
     }
 }

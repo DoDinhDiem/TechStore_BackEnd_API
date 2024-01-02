@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechStore.Models;
 
 namespace TechStore.Controllers
 {
+    [Authorize(Roles = "Admin,Nhân viên")]
     [Route("api/[controller]")]
     [ApiController]
     public class NhaCungCapController : ControllerBase
@@ -140,6 +142,36 @@ namespace TechStore.Controllers
                 return Ok(new
                 {
                     message = "Xóa nhà cung cấp thành công!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("Update_NhaCungCap_TrangThai/{id}")]
+        [HttpPut]
+        public async Task<ActionResult<NhaCungCap>> UpdateLoai(int id)
+        {
+            try
+            {
+                var query = await (from loai in _context.NhaCungCaps
+                                   where loai.Id == id
+                                   select loai).FirstOrDefaultAsync();
+                if (query == null)
+                {
+                    return NotFound();
+                }
+
+                query.TrangThai = !query.TrangThai;
+                query.UpdateDate = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Sửa trạng thái và UpdateDate của loại sản phẩm thành công!"
                 });
             }
             catch (Exception ex)

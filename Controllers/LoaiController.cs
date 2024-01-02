@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechStore.Models;
 
 namespace TechStore.Controllers
 {
+    [Authorize(Roles = "Admin,Nhân viên")]
     [Route("api/[controller]")]
     [ApiController]
     public class LoaiController : ControllerBase
@@ -49,7 +51,6 @@ namespace TechStore.Controllers
                                        id = loai.Id,
                                        tenLoai = loai.TenLoai,
                                        trangThai = loai.TrangThai,
-                                       sapXep = loai.SapXep,
                                        createDate = loai.CreateDate,
                                        updateDate = loai.UpdateDate
                                    }).FirstOrDefaultAsync();
@@ -102,7 +103,6 @@ namespace TechStore.Controllers
 
                 query.TenLoai = loais.TenLoai;
                 query.TrangThai = loais.TrangThai;
-                query.SapXep = loais.SapXep;
                 query.UpdateDate = DateTime.Now;
 
                 await _context.SaveChangesAsync();
